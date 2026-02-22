@@ -3,122 +3,579 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - My Drive</title>
+    <title>Premium Admin Dashboard - My Drive</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f1f5f9; padding: 20px; margin: 0; }
-        .container { background: white; max-width: 600px; margin: 0 auto; padding: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #1e293b; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; color: #475569; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
-        button { background: #10b981; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; }
-        button:hover { background: #059669; }
-        .folder-list { margin-top: 30px; border-top: 2px solid #e2e8f0; padding-top: 20px; }
-        .item { background: #f8fafc; padding: 10px; border: 1px solid #e2e8f0; margin-bottom: 10px; border-radius: 5px; display: flex; justify-content: space-between; }
-        .delete-btn { background: #ef4444; width: auto; padding: 5px 10px; margin: 0; font-size: 12px; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+        /* CSS Variables for Premium Dark/Light Mode */
+        :root {
+            --bg-gradient: linear-gradient(135deg, #f6f8fd 0%, #f1f5f9 100%);
+            --bg-container: rgba(255, 255, 255, 0.95);
+            --text-main: #475569;
+            --text-heading: #0f172a;
+            --border-color: rgba(203, 213, 225, 0.6);
+            --item-bg: #ffffff;
+            --item-hover: #f8fafc;
+            --file-bg: #fffdf5;
+            --file-hover: #fffbeb;
+            --file-border: #fcd34d;
+            --stats-bg: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            --stats-border: #bae6fd;
+            --trash-bg: #fef2f2;
+            --trash-border: #fecaca;
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 10px 25px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+            --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Dark Mode Variables */
+        body.dark-mode {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            --bg-container: rgba(30, 41, 59, 0.95);
+            --text-main: #cbd5e1;
+            --text-heading: #f8fafc;
+            --border-color: rgba(51, 65, 85, 0.8);
+            --item-bg: #0f172a;
+            --item-hover: #1e293b;
+            --file-bg: #2a1604;
+            --file-hover: #422006;
+            --file-border: #b45309;
+            --stats-bg: linear-gradient(135deg, #0c4a6e 0%, #075985 100%);
+            --stats-border: #0369a1;
+            --trash-bg: #450a0a;
+            --trash-border: #7f1d1d;
+            --shadow-md: 0 10px 25px -3px rgba(0, 0, 0, 0.4);
+            --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: var(--bg-gradient); 
+            padding: 40px 20px; 
+            margin: 0; 
+            min-height: 100vh;
+            color: var(--text-main);
+            transition: all 0.4s ease;
+        }
+        
+        .container { 
+            background: var(--bg-container); 
+            max-width: 780px; 
+            margin: 0 auto; 
+            padding: 40px; 
+            border-radius: 24px; 
+            box-shadow: var(--shadow-md); 
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            transition: all 0.4s ease;
+        }
+
+        /* === Login Page Animations === */
+        .login-logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-circle {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.5);
+            animation: floatLogo 3s ease-in-out infinite, pulseGlow 2s infinite alternate;
+            margin-bottom: 15px;
+        }
+
+        .logo-icon {
+            font-size: 2.5rem;
+            color: white;
+            animation: spinInner 10s linear infinite;
+        }
+
+        .brand-title {
+            color: var(--text-heading);
+            font-weight: 800;
+            font-size: 1.8rem;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-subtitle {
+            color: var(--text-main);
+            font-size: 0.95rem;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+
+        /* Keyframes */
+        @keyframes floatLogo {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+            100% { transform: translateY(0px); }
+        }
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); }
+            100% { box-shadow: 0 0 35px rgba(99, 102, 241, 0.7); }
+        }
+        @keyframes spinInner {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-slide-up {
+            animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0; /* Starts hidden */
+        }
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+
+        /* === General UI Elements === */
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        h2 { color: var(--text-heading); margin: 0; font-weight: 800; }
+        
+        .form-group { margin-bottom: 24px; }
+        label { display: flex; align-items: center; gap: 8px; font-weight: 700; margin-bottom: 10px; color: var(--text-heading); font-size: 15px; }
+        
+        input, select { 
+            width: 100%; padding: 14px 18px; 
+            border: 1.5px solid var(--border-color); 
+            background: var(--item-bg);
+            color: var(--text-main);
+            border-radius: 12px; box-sizing: border-box; font-family: inherit; font-size: 15px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+        }
+        
+        button { 
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 14px; 
+            border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 15px; 
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4); }
+        button:active { transform: translateY(0); }
+        
+        .btn-primary { 
+            background: linear-gradient(135deg, #3b82f6 0%, #4f46e5 100%); 
+            width: 100%; margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+        .btn-primary:hover { box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4); }
+        
+        /* Stats Box */
+        .stats-box { 
+            display: flex; justify-content: space-between; background: var(--stats-bg); 
+            padding: 24px; border-radius: 16px; margin-bottom: 30px; 
+            border: 1px solid var(--stats-border); 
+            box-shadow: var(--shadow-sm);
+        }
+        .stats-box div { text-align: center; width: 32%; font-size: 14px; font-weight: 600; display: flex; flex-direction: column; gap: 8px; color: var(--text-heading);}
+        .stat-value { font-size: 28px; font-weight: 800; color: #3b82f6; text-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .stat-small { font-size: 14px; font-weight: 700; color: #f59e0b; }
+        
+        .section-divider { border: 0; height: 1.5px; background: var(--border-color); margin: 35px 0; }
+
+        /* Items (Folders & Files) */
+        .item, .file-item { 
+            padding: 16px 20px; border: 1px solid var(--border-color); margin-bottom: 14px; 
+            border-radius: 14px; display: flex; justify-content: space-between; align-items: center; 
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: var(--shadow-sm);
+        }
+        .item { background: var(--item-bg); }
+        .file-item { background: var(--file-bg); border: 1.5px dashed var(--file-border); }
+        
+        .item:hover, .file-item:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: var(--shadow-hover);
+            border-color: #3b82f6;
+        }
+
+        .item-info { display: flex; align-items: center; gap: 15px; }
+        .item-icon { font-size: 1.8rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }
+        .item-details { display: flex; flex-direction: column; gap: 2px;}
+        .item-name { font-weight: 700; color: var(--text-heading); font-size: 16px; }
+        .item-date { font-size: 12px; font-weight: 500; opacity: 0.7; }
+        
+        .action-btns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end;}
+        .btn-small { 
+            width: auto; padding: 8px 12px; font-size: 13px; border-radius: 8px; 
+            box-shadow: none; font-weight: 600;
+        }
+        .btn-small:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+        .btn-copy { background: #6366f1; }
+        .btn-preview { background: #0ea5e9; }
+        .btn-rename { background: #3b82f6; }
+        .btn-trash { background: #f59e0b; }
+        .btn-delete { background: #ef4444; }
+        
+        .trash-section { background: var(--trash-bg); border: 1px solid var(--trash-border); padding: 25px; border-radius: 16px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);}
+        
+        /* Toast Notification */
+        #toast-container { position: fixed; bottom: 30px; right: 30px; z-index: 9999; display: flex; flex-direction: column; gap: 12px; }
+        .toast { 
+            background: var(--bg-container); border: 1px solid var(--border-color); color: var(--text-heading); 
+            padding: 16px 24px; border-radius: 12px; box-shadow: var(--shadow-hover); 
+            font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 12px;
+            animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            backdrop-filter: blur(10px);
+        }
+        .toast.success i { color: #10b981; font-size: 1.2rem; }
+        .toast.error i { color: #ef4444; font-size: 1.2rem; }
+        @keyframes slideIn { from { transform: translateX(120%) scale(0.9); opacity: 0; } to { transform: translateX(0) scale(1); opacity: 1; } }
+
+        .toolbar { display: flex; gap: 15px; margin-bottom: 20px; }
         #adminPanel { display: none; }
+        
+        /* Custom Scrollbar for better look */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
 <body>
 
-    <div class="container" id="loginPanel">
-        <h2>Admin Login</h2>
-        <input type="password" id="adminPass" placeholder="Enter Admin Password">
-        <button onclick="loginAdmin()">Login</button>
+    <div id="toast-container"></div>
+
+    <div class="container animate-slide-up" id="loginPanel">
+        <div class="login-logo-container">
+            <div class="logo-circle">
+                <i class="fas fa-cloud logo-icon"></i>
+            </div>
+            <h2 class="brand-title">Admin Console</h2>
+            <div class="brand-subtitle">Secure Access Required</div>
+        </div>
+        <div class="form-group" style="margin-top: 30px;">
+            <input type="password" id="adminPass" placeholder="Enter Admin Password" style="text-align: center; letter-spacing: 2px;">
+        </div>
+        <button class="btn-primary" onclick="loginAdmin()"><i class="fas fa-unlock"></i> Unlock Dashboard</button>
     </div>
 
     <div class="container" id="adminPanel">
-        <h2>Drive Admin Dashboard</h2>
+        <div class="header-top animate-slide-up">
+            <h2 style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-meteor" style="color:#3b82f6; font-size: 1.8rem; filter: drop-shadow(0 2px 5px rgba(59,130,246,0.3));"></i> 
+                Drive Pro
+            </h2>
+            <button onclick="toggleDarkMode()" style="background: var(--item-bg); color: var(--text-heading); border: 1px solid var(--border-color); width: 45px; height: 45px; padding: 0; border-radius: 12px;"><i class="fas fa-moon" style="font-size: 1.2rem;"></i></button>
+        </div>
         
-        <div class="form-group">
-            <label>১. নতুন ফোল্ডার তৈরি করুন</label>
-            <input type="text" id="folderName" placeholder="Folder Name (e.g. Movies)">
-            <input type="color" id="folderColor" value="#3b82f6" style="height: 40px; padding: 2px;">
-            <button onclick="addFolder()">Create Folder</button>
+        <div class="stats-box animate-slide-up delay-1">
+            <div><i class="fas fa-folder-open" style="font-size:24px; color:#0ea5e9;"></i> <span id="statTotalFolders" class="stat-value">0</span> Folders</div>
+            <div><i class="fas fa-file-alt" style="font-size:24px; color:#10b981;"></i> <span id="statTotalFiles" class="stat-value">0</span> Files</div>
+            <div><i class="fas fa-bolt" style="font-size:24px; color:#f59e0b;"></i> <span id="statLastAdded" class="stat-small">None</span> Last Add</div>
         </div>
 
-        <br><hr><br>
+        <div class="form-group animate-slide-up delay-2">
+            <label><i class="fas fa-folder-plus"></i> 1. Create New Folder</label>
+            <div style="display: flex; gap:12px;">
+                <input type="text" id="folderName" placeholder="Folder Name (e.g. Projects)">
+                <input type="color" id="folderColor" value="#3b82f6" style="width:55px; height:50px; padding:2px; border-radius: 12px; cursor: pointer;">
+                <button onclick="addFolder()" style="width: auto; margin:0; padding: 0 20px;"><i class="fas fa-plus"></i></button>
+            </div>
+        </div>
 
-        <div class="form-group">
-            <label>২. ফোল্ডারে ফাইল যুক্ত করুন</label>
-            <select id="folderSelect"><option value="">Loading folders...</option></select>
+        <hr class="section-divider animate-slide-up delay-2">
+
+        <div class="form-group animate-slide-up delay-3">
+            <label><i class="fas fa-cloud-upload-alt"></i> 2. Upload File to Folder</label>
+            <select id="folderSelect"><option value="">Loading...</option></select>
+            <input type="text" id="fileName" placeholder="File Name (e.g. presentation.pdf)" style="margin-top:12px;">
+            <input type="text" id="fileLink" placeholder="Original Secure Link (https://...)" style="margin-top:12px;">
+            <button class="btn-primary" onclick="addFile()"><i class="fas fa-paper-plane"></i> Upload Now</button>
         </div>
-        <div class="form-group">
-            <input type="text" id="fileName" placeholder="File Name (e.g. Spider-Man.mp4)">
+
+        <hr class="section-divider animate-slide-up delay-3">
+
+        <div class="form-group animate-slide-up delay-3">
+            <label><i class="fas fa-tasks"></i> 3. Manage Your Drive</label>
+            <div class="toolbar">
+                <input type="text" id="searchBox" placeholder="Search files or folders..." onkeyup="searchItems()" style="flex: 2;">
+                <select id="sortBox" onchange="sortFiles()" style="flex: 1;">
+                    <option value="newest">Newest First</option>
+                    <option value="az">A to Z</option>
+                    <option value="za">Z to A</option>
+                </select>
+            </div>
+            
+            <select id="manageFolderSelect" onchange="loadFilesInFolder()" style="margin-bottom: 20px;">
+                <option value="">-- Select Folder to View Files --</option>
+            </select>
+            <div id="folderListContainer"></div>
+            <div id="fileListContainer" style="margin-top: 15px;"></div>
         </div>
-        <div class="form-group">
-            <input type="text" id="fileLink" placeholder="Original Download Link (https://...)">
-            <button onclick="addFile()" style="background: #3b82f6;">Add File</button>
+
+        <div class="trash-section animate-slide-up delay-3" style="margin-top: 30px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <label style="color: #dc2626; margin:0; font-size: 16px;"><i class="fas fa-dumpster-fire"></i> Recycle Bin</label>
+                <button class="btn-small btn-delete" onclick="emptyTrash()"><i class="fas fa-fire"></i> Empty All</button>
+            </div>
+            <div id="trashContainer"></div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAAgePbRLUBux1hh_UpavZ442sPYULAN-g",
             authDomain: "myonlinedrive-9b428.firebaseapp.com",
             databaseURL: "https://myonlinedrive-9b428-default-rtdb.firebaseio.com",
             projectId: "myonlinedrive-9b428",
-            storageBucket: "myonlinedrive-9b428.firebasestorage.app",
-            messagingSenderId: "164675746629",
-            appId: "1:164675746629:web:ec95a02b26e5f23eb65c2c"
+            storageBucket: "myonlinedrive-9b428.firebasestorage.app"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        let currentFilesData = [];
 
-        // Security
-        window.loginAdmin = function() {
-            if(document.getElementById('adminPass').value === "123") {
-                document.getElementById('loginPanel').style.display = 'none';
-                document.getElementById('adminPanel').style.display = 'block';
-                loadFoldersForSelect();
-            } else { alert("Wrong Password!"); }
+        window.showToast = function(msg, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            let icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+            toast.innerHTML = `<i class="fas ${icon}"></i> <span>${msg}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => { toast.remove(); }, 3500);
         };
 
-        // Add Folder to Firebase
+        window.toggleDarkMode = function() {
+            document.body.classList.toggle('dark-mode');
+            let isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('driveDarkMode', isDark);
+            showToast(isDark ? "Dark Mode Activated" : "Light Mode Activated");
+        };
+
+        if(localStorage.getItem('driveDarkMode') === 'true') { document.body.classList.add('dark-mode'); }
+
+        function getFileIcon(filename) {
+            let lower = filename.toLowerCase();
+            if(lower.match(/\.(mp4|mkv|avi|mov)$/)) return { icon: 'fa-file-video', color: '#ef4444' };
+            if(lower.match(/\.(jpg|jpeg|png|gif|webp)$/)) return { icon: 'fa-file-image', color: '#10b981' };
+            if(lower.match(/\.(pdf)$/)) return { icon: 'fa-file-pdf', color: '#dc2626' };
+            if(lower.match(/\.(zip|rar|7z)$/)) return { icon: 'fa-file-archive', color: '#8b5cf6' };
+            if(lower.match(/\.(mp3|wav)$/)) return { icon: 'fa-file-audio', color: '#f59e0b' };
+            return { icon: 'fa-file-alt', color: '#3b82f6' };
+        }
+
+        window.loginAdmin = function() {
+            if(document.getElementById('adminPass').value === "042567mm") {
+                document.getElementById('loginPanel').style.display = 'none';
+                let adminPanel = document.getElementById('adminPanel');
+                adminPanel.style.display = 'block';
+                showToast("Access Granted. Welcome back!");
+                loadFolders(); 
+                loadStatsAndTrash();
+            } else { showToast("Authentication Failed!", "error"); }
+        };
+
+        function formatTime(ms) {
+            if(!ms) return '';
+            let date = new Date(ms);
+            return date.toLocaleDateString() + ' • ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }
+
         window.addFolder = function() {
             let name = document.getElementById('folderName').value;
             let color = document.getElementById('folderColor').value;
-            if(!name) return alert("Enter folder name!");
+            if(!name) return showToast("Folder name is required!", "error");
             
             const folderRef = push(ref(db, 'driveData/folders'));
-            set(folderRef, { name: name, color: color, id: folderRef.key });
-            
+            set(folderRef, { name: name, color: color, id: folderRef.key, createdAt: Date.now(), isTrashed: false });
             document.getElementById('folderName').value = "";
-            alert("Folder Created Successfully!");
+            showToast("Folder Created Successfully!");
         };
 
-        // Load Folders in Dropdown
-        function loadFoldersForSelect() {
+        function loadFolders() {
             onValue(ref(db, 'driveData/folders'), (snapshot) => {
                 let select = document.getElementById('folderSelect');
+                let manageSelect = document.getElementById('manageFolderSelect');
+                let listContainer = document.getElementById('folderListContainer');
+                
                 select.innerHTML = '<option value="">-- Select a Folder --</option>';
+                manageSelect.innerHTML = '<option value="">-- Select a Folder --</option>';
+                listContainer.innerHTML = ''; 
+                
+                if(!snapshot.exists()) return;
+
                 snapshot.forEach((childSnapshot) => {
                     let folder = childSnapshot.val();
-                    select.innerHTML += `<option value="${folder.id}">${folder.name}</option>`;
+                    if(!folder.isTrashed) {
+                        select.innerHTML += `<option value="${folder.id}">${folder.name}</option>`;
+                        manageSelect.innerHTML += `<option value="${folder.id}">${folder.name}</option>`;
+                        listContainer.innerHTML += `
+                            <div class="item search-item animate-slide-up" data-name="${folder.name.toLowerCase()}">
+                                <div class="item-info">
+                                    <i class="fas fa-folder item-icon" style="color: ${folder.color};"></i>
+                                    <div class="item-details">
+                                        <span class="item-name">${folder.name}</span>
+                                        <span class="item-date">${formatTime(folder.createdAt)}</span>
+                                    </div>
+                                </div>
+                                <div class="action-btns">
+                                    <button class="btn-small btn-rename" onclick="renameFolder('${folder.id}', '${folder.name}')"><i class="fas fa-pen"></i> Edit</button>
+                                    <button class="btn-small btn-trash" onclick="trashFolder('${folder.id}')"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </div>`;
+                    }
                 });
             });
         }
 
-        // Add File to Firebase
+        window.loadFilesInFolder = function() {
+            let folderId = document.getElementById('manageFolderSelect').value;
+            if(!folderId) { document.getElementById('fileListContainer').innerHTML = ''; return; }
+
+            onValue(ref(db, `driveData/files/${folderId}`), (snapshot) => {
+                currentFilesData = [];
+                if(snapshot.exists()) {
+                    snapshot.forEach((child) => {
+                        let file = child.val(); file.id = child.key; file.folderId = folderId;
+                        if(!file.isTrashed) currentFilesData.push(file);
+                    });
+                }
+                renderFiles();
+            });
+        };
+
+        window.renderFiles = function() {
+            let container = document.getElementById('fileListContainer');
+            container.innerHTML = '';
+            if(currentFilesData.length === 0) return;
+
+            let sortType = document.getElementById('sortBox').value;
+            if(sortType === 'az') currentFilesData.sort((a,b) => a.name.localeCompare(b.name));
+            else if(sortType === 'za') currentFilesData.sort((a,b) => b.name.localeCompare(a.name));
+            else currentFilesData.sort((a,b) => b.createdAt - a.createdAt);
+
+            currentFilesData.forEach((file, index) => {
+                let fileStyle = getFileIcon(file.name);
+                container.innerHTML += `
+                    <div class="file-item search-item animate-slide-up" data-name="${file.name.toLowerCase()}" style="animation-delay: ${index * 0.05}s">
+                        <div class="item-info">
+                            <i class="fas ${fileStyle.icon} item-icon" style="color: ${fileStyle.color};"></i>
+                            <div class="item-details">
+                                <span class="item-name">${file.name}</span>
+                                <span class="item-date">${formatTime(file.createdAt)}</span>
+                            </div>
+                        </div>
+                        <div class="action-btns">
+                            <button class="btn-small btn-preview" onclick="previewFile('${file.link}')"><i class="fas fa-eye"></i></button>
+                            <button class="btn-small btn-copy" onclick="copyFileLink('${file.link}')"><i class="fas fa-link"></i></button>
+                            <button class="btn-small btn-trash" onclick="trashFile('${file.folderId}', '${file.id}')"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        window.sortFiles = function() { renderFiles(); };
+
         window.addFile = function() {
             let folderId = document.getElementById('folderSelect').value;
             let name = document.getElementById('fileName').value;
             let link = document.getElementById('fileLink').value;
-            
-            if(!folderId || !name || !link) return alert("Fill all fields!");
+            if(!folderId || !name || !link) return showToast("All fields are required!", "error");
 
-            let encodedLink = btoa(link); // Auto Encode to Base64
-            
+            let encodedLink = btoa(link); 
             const fileRef = push(ref(db, `driveData/files/${folderId}`));
-            set(fileRef, { name: name, link: encodedLink });
+            set(fileRef, { name: name, link: encodedLink, createdAt: Date.now(), isTrashed: false });
             
-            document.getElementById('fileName').value = "";
-            document.getElementById('fileLink').value = "";
-            alert("File Added Successfully!");
+            document.getElementById('fileName').value = ""; document.getElementById('fileLink').value = "";
+            showToast("File Uploaded Securely!");
+        };
+
+        window.copyFileLink = function(encodedLink) { navigator.clipboard.writeText(atob(encodedLink)).then(() => { showToast("Link Copied!"); }); };
+        window.previewFile = function(encodedLink) { window.open(atob(encodedLink), '_blank'); };
+
+        function loadStatsAndTrash() {
+            onValue(ref(db, 'driveData'), (snapshot) => {
+                let data = snapshot.val();
+                let totalFolders = 0, totalFiles = 0, lastAddedFile = "None", latestTime = 0;
+                let trashContainer = document.getElementById('trashContainer');
+                trashContainer.innerHTML = ''; 
+
+                if(data) {
+                    if(data.folders) {
+                        Object.values(data.folders).forEach(folder => {
+                            if(folder.isTrashed) {
+                                trashContainer.innerHTML += `
+                                    <div class="item" style="opacity:0.8; box-shadow:none;">
+                                        <div class="item-info"><i class="fas fa-folder item-icon"></i> <span class="item-name" style="text-decoration: line-through;">${folder.name}</span></div>
+                                        <div class="action-btns"><button class="btn-small btn-copy" onclick="restoreFolder('${folder.id}')"><i class="fas fa-undo"></i> Restore</button></div>
+                                    </div>`;
+                            } else { totalFolders++; }
+                        });
+                    }
+                    if(data.files) {
+                        Object.entries(data.files).forEach(([folderId, filesObj]) => {
+                            Object.entries(filesObj).forEach(([fileId, file]) => {
+                                if(file.isTrashed) {
+                                    trashContainer.innerHTML += `
+                                        <div class="file-item" style="opacity:0.8; box-shadow:none;">
+                                            <div class="item-info"><i class="fas fa-file item-icon"></i> <span class="item-name" style="text-decoration: line-through;">${file.name}</span></div>
+                                            <div class="action-btns"><button class="btn-small btn-copy" onclick="restoreFile('${folderId}', '${fileId}')"><i class="fas fa-undo"></i> Restore</button></div>
+                                        </div>`;
+                                } else {
+                                    totalFiles++;
+                                    if(file.createdAt > latestTime) { latestTime = file.createdAt; lastAddedFile = file.name; }
+                                }
+                            });
+                        });
+                    }
+                }
+                document.getElementById('statTotalFolders').innerText = totalFolders;
+                document.getElementById('statTotalFiles').innerText = totalFiles;
+                document.getElementById('statLastAdded').innerText = lastAddedFile.length > 12 ? lastAddedFile.substring(0, 12) + "..." : lastAddedFile;
+                if(trashContainer.innerHTML === '') trashContainer.innerHTML = '<p style="font-weight: 500; opacity:0.6;"><i class="fas fa-wind"></i> Trash is empty.</p>';
+            });
+        }
+
+        window.searchItems = function() {
+            let input = document.getElementById('searchBox').value.toLowerCase();
+            document.querySelectorAll('.search-item').forEach(item => {
+                item.style.display = item.getAttribute('data-name').includes(input) ? "flex" : "none";
+            });
+        };
+
+        window.trashFolder = function(id) { if(confirm("Move folder to trash?")) { update(ref(db, `driveData/folders/${id}`), { isTrashed: true }); showToast("Moved to Trash"); }};
+        window.trashFile = function(folderId, fileId) { if(confirm("Move file to trash?")) { update(ref(db, `driveData/files/${folderId}/${fileId}`), { isTrashed: true }); showToast("Moved to Trash"); }};
+        window.restoreFolder = function(id) { update(ref(db, `driveData/folders/${id}`), { isTrashed: false }); showToast("Restored!"); };
+        window.restoreFile = function(folderId, fileId) { update(ref(db, `driveData/files/${folderId}/${fileId}`), { isTrashed: false }); showToast("Restored!"); };
+        
+        window.renameFolder = function(id, oldName) { let newName = prompt("Enter new name:", oldName); if(newName && newName !== oldName) { update(ref(db, `driveData/folders/${id}`), { name: newName }); showToast("Renamed!"); } };
+
+        window.emptyTrash = function() {
+            if(confirm("PERMANENTLY delete everything in the trash? This action cannot be undone.")) {
+                onValue(ref(db, 'driveData/folders'), (snapshot) => { if(snapshot.exists()) { snapshot.forEach((child) => { if(child.val().isTrashed) { remove(ref(db, `driveData/folders/${child.key}`)); remove(ref(db, `driveData/files/${child.key}`)); } }); } }, { onlyOnce: true });
+                onValue(ref(db, 'driveData/files'), (snapshot) => { if(snapshot.exists()) { snapshot.forEach((folder) => { folder.forEach((file) => { if(file.val().isTrashed) { remove(ref(db, `driveData/files/${folder.key}/${file.key}`)); } }); }); } }, { onlyOnce: true });
+                setTimeout(() => showToast("Trash Emptied Securely!"), 1000);
+            }
         };
     </script>
 </body>
