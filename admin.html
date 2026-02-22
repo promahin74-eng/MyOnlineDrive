@@ -1,1 +1,126 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - My Drive</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f1f5f9; padding: 20px; margin: 0; }
+        .container { background: white; max-width: 600px; margin: 0 auto; padding: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #1e293b; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #475569; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
+        button { background: #10b981; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; }
+        button:hover { background: #059669; }
+        .folder-list { margin-top: 30px; border-top: 2px solid #e2e8f0; padding-top: 20px; }
+        .item { background: #f8fafc; padding: 10px; border: 1px solid #e2e8f0; margin-bottom: 10px; border-radius: 5px; display: flex; justify-content: space-between; }
+        .delete-btn { background: #ef4444; width: auto; padding: 5px 10px; margin: 0; font-size: 12px; }
+        #adminPanel { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="loginPanel">
+        <h2>Admin Login</h2>
+        <input type="password" id="adminPass" placeholder="Enter Admin Password">
+        <button onclick="loginAdmin()">Login</button>
+    </div>
+
+    <div class="container" id="adminPanel">
+        <h2>Drive Admin Dashboard</h2>
+        
+        <div class="form-group">
+            <label>১. নতুন ফোল্ডার তৈরি করুন</label>
+            <input type="text" id="folderName" placeholder="Folder Name (e.g. Movies)">
+            <input type="color" id="folderColor" value="#3b82f6" style="height: 40px; padding: 2px;">
+            <button onclick="addFolder()">Create Folder</button>
+        </div>
+
+        <br><hr><br>
+
+        <div class="form-group">
+            <label>২. ফোল্ডারে ফাইল যুক্ত করুন</label>
+            <select id="folderSelect"><option value="">Loading folders...</option></select>
+        </div>
+        <div class="form-group">
+            <input type="text" id="fileName" placeholder="File Name (e.g. Spider-Man.mp4)">
+        </div>
+        <div class="form-group">
+            <input type="text" id="fileLink" placeholder="Original Download Link (https://...)">
+            <button onclick="addFile()" style="background: #3b82f6;">Add File</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAAgePbRLUBux1hh_UpavZ442sPYULAN-g",
+            authDomain: "myonlinedrive-9b428.firebaseapp.com",
+            databaseURL: "https://myonlinedrive-9b428-default-rtdb.firebaseio.com",
+            projectId: "myonlinedrive-9b428",
+            storageBucket: "myonlinedrive-9b428.firebasestorage.app",
+            messagingSenderId: "164675746629",
+            appId: "1:164675746629:web:ec95a02b26e5f23eb65c2c"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Security
+        window.loginAdmin = function() {
+            if(document.getElementById('adminPass').value === "123") {
+                document.getElementById('loginPanel').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                loadFoldersForSelect();
+            } else { alert("Wrong Password!"); }
+        };
+
+        // Add Folder to Firebase
+        window.addFolder = function() {
+            let name = document.getElementById('folderName').value;
+            let color = document.getElementById('folderColor').value;
+            if(!name) return alert("Enter folder name!");
+            
+            const folderRef = push(ref(db, 'driveData/folders'));
+            set(folderRef, { name: name, color: color, id: folderRef.key });
+            
+            document.getElementById('folderName').value = "";
+            alert("Folder Created Successfully!");
+        };
+
+        // Load Folders in Dropdown
+        function loadFoldersForSelect() {
+            onValue(ref(db, 'driveData/folders'), (snapshot) => {
+                let select = document.getElementById('folderSelect');
+                select.innerHTML = '<option value="">-- Select a Folder --</option>';
+                snapshot.forEach((childSnapshot) => {
+                    let folder = childSnapshot.val();
+                    select.innerHTML += `<option value="${folder.id}">${folder.name}</option>`;
+                });
+            });
+        }
+
+        // Add File to Firebase
+        window.addFile = function() {
+            let folderId = document.getElementById('folderSelect').value;
+            let name = document.getElementById('fileName').value;
+            let link = document.getElementById('fileLink').value;
+            
+            if(!folderId || !name || !link) return alert("Fill all fields!");
+
+            let encodedLink = btoa(link); // Auto Encode to Base64
+            
+            const fileRef = push(ref(db, `driveData/files/${folderId}`));
+            set(fileRef, { name: name, link: encodedLink });
+            
+            document.getElementById('fileName').value = "";
+            document.getElementById('fileLink').value = "";
+            alert("File Added Successfully!");
+        };
+    </script>
+</body>
+</html>
