@@ -1,1 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Online Drive</title>
+    <style>
+        /* আগের সব CSS একই আছে, শুধু জায়গা বাঁচানোর জন্য এক লাইনে করে দিয়েছি */
+        body { font-family: Arial, sans-serif; background-color: #e2e8f0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; margin: 0; box-sizing: border-box; }
+        .container { background: white; width: 100%; max-width: 600px; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); box-sizing: border-box; display: none; }
+        #loginSection, #blockedSection { display: block; text-align: center; }
+        .lock-icon { width: 50px; height: 50px; color: #3b82f6; margin-bottom: 15px; }
+        .error-msg { color: #ef4444; font-size: 14px; margin-bottom: 15px; display: none; }
+        #passwordInput { width: 100%; padding: 12px 15px; margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: 16px; text-align: center; }
+        .btn { background: #3b82f6; color: white; border: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; font-size: 16px; cursor: pointer; width: 100%; transition: 0.3s; }
+        .btn:hover { background: #2563eb; }
+        #countdown { font-size: 24px; font-weight: bold; color: #ef4444; margin-top: 15px; }
+        h2 { text-align: center; color: #1e293b; margin-top: 0; margin-bottom: 20px; }
+        .search-container { position: relative; margin-bottom: 20px; width: 100%; }
+        .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: #94a3b8; }
+        #searchInput { width: 100%; padding: 12px 15px 12px 45px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        .file-list { display: flex; flex-direction: column; gap: 15px; }
+        .file-card { background: #f8fafc; padding: 15px 20px; border-radius: 8px; border: 1px solid #cbd5e1; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+        .folder-card { cursor: pointer; }
+        .folder-card:hover { background: #e2e8f0; border-color: #94a3b8; }
+        .file-info { display: flex; align-items: center; gap: 12px; }
+        .folder-icon, .file-icon { width: 32px; height: 32px; flex-shrink: 0; }
+        .file-icon { color: #64748b; }
+        .file-info h3 { margin: 0; color: #334155; font-size: 18px; }
+        .download-icon-btn { color: #3b82f6; background: none; border: none; cursor: pointer; padding: 5px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+        .download-icon-btn:hover { background: #bfdbfe; color: #1d4ed8; }
+        .download-svg { width: 24px; height: 24px; }
+        .back-btn { display: flex; align-items: center; gap: 10px; cursor: pointer; color: #64748b; margin-bottom: 15px; font-weight: bold; width: fit-content; padding: 5px 10px; border-radius: 6px; transition: 0.2s;}
+        .back-btn:hover { background: #e2e8f0; color: #334155; }
+        .back-icon { width: 20px; height: 20px; }
+    </style>
+</head>
+<body oncontextmenu="return false">
 
+    <div class="container" id="loginSection">
+        <svg class="lock-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+        <h2>Enter Password</h2>
+        <p id="errorMsg" class="error-msg"></p>
+        <input type="password" id="passwordInput" placeholder="Password">
+        <button class="btn" onclick="checkPassword()">Login</button>
+    </div>
+
+    <div class="container" id="blockedSection" style="display: none;">
+        <h2 style="color: #ef4444;">Access Blocked</h2>
+        <div id="countdown"></div>
+    </div>
+
+    <div class="container" id="driveSection">
+        <h2>My Online Drive</h2>
+        
+        <div class="search-container">
+            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input type="text" id="searchInput" placeholder="Search files..." onkeyup="searchFiles()">
+        </div>
+        
+        <div id="backButtonContainer" style="display: none;">
+            <div class="back-btn" onclick="openFolder('root')">
+                <svg class="back-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Folders
+            </div>
+        </div>
+
+        <div class="file-list" id="fileList">
+            <p style="text-align:center; color:#64748b;">Loading...</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAAgePbRLUBux1hh_UpavZ442sPYULAN-g",
+            authDomain: "myonlinedrive-9b428.firebaseapp.com",
+            databaseURL: "https://myonlinedrive-9b428-default-rtdb.firebaseio.com",
+            projectId: "myonlinedrive-9b428",
+            storageBucket: "myonlinedrive-9b428.firebasestorage.app",
+            messagingSenderId: "164675746629",
+            appId: "1:164675746629:web:ec95a02b26e5f23eb65c2c"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        let currentPath = "root";
+        let driveFolders = [];
+        let driveFiles = {};
+
+        // Fetch Live Data from Firebase
+        onValue(ref(db, 'driveData'), (snapshot) => {
+            const data = snapshot.val();
+            if(data) {
+                driveFolders = data.folders ? Object.values(data.folders) : [];
+                driveFiles = data.files || {};
+                if(sessionStorage.getItem('driveAuth') === 'true') {
+                    renderDrive();
+                }
+            } else {
+                document.getElementById("fileList").innerHTML = "<p style='text-align:center; color:#64748b;'>No folders found. Add from Admin Panel.</p>";
+            }
+        });
+
+        window.renderDrive = function() {
+            const listContainer = document.getElementById("fileList");
+            const backBtn = document.getElementById("backButtonContainer");
+            const searchInput = document.getElementById("searchInput");
+            
+            listContainer.innerHTML = "";
+            searchInput.value = ""; 
+
+            if (currentPath === "root") {
+                backBtn.style.display = "none";
+                driveFolders.forEach(folder => {
+                    listContainer.innerHTML += `
+                        <div class="file-card folder-card" onclick="openFolder('${folder.id}')">
+                            <div class="file-info">
+                                <svg class="folder-icon" style="fill: ${folder.color};" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                    <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+                                </svg>
+                                <h3>${folder.name}</h3>
+                            </div>
+                        </div>`;
+                });
+            } else {
+                backBtn.style.display = "block";
+                const filesInFolder = driveFiles[currentPath] ? Object.values(driveFiles[currentPath]) : [];
+                
+                if(filesInFolder.length === 0) {
+                    listContainer.innerHTML = "<p style='text-align:center; color:#64748b;'>Folder is empty.</p>";
+                }
+
+                filesInFolder.forEach(file => {
+                    listContainer.innerHTML += `
+                        <div class="file-card">
+                            <div class="file-info">
+                                <svg class="file-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                </svg>
+                                <h3>${file.name}</h3>
+                            </div>
+                            <button class="download-icon-btn" onclick="openSecureLink('${file.link}')">
+                                <svg class="download-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                            </button>
+                        </div>`;
+                });
+            }
+        };
+
+        window.openFolder = function(folderId) {
+            currentPath = folderId;
+            renderDrive();
+        };
+
+        window.searchFiles = function() {
+            let input = document.getElementById('searchInput').value.toLowerCase();
+            let cards = document.getElementsByClassName('file-card');
+            for (let i = 0; i < cards.length; i++) {
+                let title = cards[i].getElementsByTagName('h3')[0].innerText.toLowerCase();
+                cards[i].style.display = title.includes(input) ? "flex" : "none";
+            }
+        };
+
+        window.openSecureLink = function(encodedUrl) {
+            let decodedUrl = atob(encodedUrl);
+            window.open(decodedUrl, '_blank');
+        };
+
+        // Security Login
+        const ENCODED_PASSWORD = "MTIz"; 
+        const BLOCK_DURATION = 10 * 60 * 60 * 1000; 
+
+        document.onkeydown = function(e) {
+            if (e.keyCode == 123) return false; 
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false; 
+            if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false; 
+            if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; 
+        };
+
+        function initSecurity() {
+            let blockTime = localStorage.getItem('driveBlockUntil');
+            if (blockTime && Date.now() < parseInt(blockTime)) {
+                showBlocked(parseInt(blockTime));
+            } else {
+                localStorage.removeItem('driveBlockUntil');
+                if (sessionStorage.getItem('driveAuth') === 'true') {
+                    document.getElementById('loginSection').style.display = 'none';
+                    document.getElementById('driveSection').style.display = 'block';
+                }
+            }
+        }
+
+        window.checkPassword = function() {
+            let input = document.getElementById('passwordInput').value;
+            let encodedInput = btoa(input);
+            let errorMsg = document.getElementById('errorMsg');
+            let attempts = parseInt(localStorage.getItem('driveAttempts') || '0');
+
+            if (encodedInput === ENCODED_PASSWORD) {
+                sessionStorage.setItem('driveAuth', 'true');
+                localStorage.removeItem('driveAttempts');
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('driveSection').style.display = 'block';
+                renderDrive();
+            } else {
+                attempts++;
+                if (attempts >= 3) {
+                    let blockUntil = Date.now() + BLOCK_DURATION;
+                    localStorage.setItem('driveBlockUntil', blockUntil);
+                    localStorage.removeItem('driveAttempts');
+                    showBlocked(blockUntil);
+                } else {
+                    localStorage.setItem('driveAttempts', attempts);
+                    errorMsg.innerText = `Incorrect Password! ${3 - attempts} attempts left.`;
+                    errorMsg.style.display = 'block';
+                }
+            }
+        };
+
+        function showBlocked(blockTime) {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('driveSection').style.display = 'none';
+            document.getElementById('blockedSection').style.display = 'block';
+        }
+
+        document.getElementById('passwordInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') checkPassword();
+        });
+
+        window.onload = initSecurity;
+    </script>
+</body>
+</html>
