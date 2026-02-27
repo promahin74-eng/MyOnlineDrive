@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" translate="no">
 <head>
 <link rel="manifest" href="manifest.json">
 
 <meta name="theme-color" content="#000000">
+<meta name="google" content="notranslate">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -131,13 +132,46 @@
             font-weight: 500;
             color: #000;
             box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 1000;
         }
         .topbar-left, .topbar-right {
             display: flex;
             align-items: center;
             gap: 15px;
         }
-        .topbar-left b { font-weight: 600; }
+        .topbar-left b { font-weight: 600; cursor: pointer; }
+        .topbar-item { cursor: pointer; position: relative; }
+        .topbar-item:hover { background: rgba(0,0,0,0.1); border-radius: 4px; padding: 2px 5px; margin: -2px -5px; }
+
+        /* Custom Dropdown Menu for File */
+        .mac-dropdown {
+            display: none;
+            position: absolute;
+            top: 25px;
+            left: 0;
+            background: rgba(245, 245, 247, 0.95);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            min-width: 220px;
+            padding: 5px 0;
+            z-index: 1001;
+        }
+        .mac-dropdown.show { display: block; }
+        .dropdown-item {
+            padding: 6px 15px;
+            font-size: 13px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+        .dropdown-item:hover { background: #007aff; color: white; }
+        .dropdown-item:hover svg { fill: white; }
+        .dropdown-item svg { width: 16px; height: 16px; fill: #666; flex-shrink: 0; transition: 0.2s; }
 
         /* Bottom Dock */
         .mac-dock-container {
@@ -147,6 +181,12 @@
             display: flex;
             justify-content: center;
             z-index: 20;
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease;
+        }
+        .mac-dock-container.hidden {
+            transform: translateY(150px);
+            opacity: 0;
+            pointer-events: none;
         }
         .mac-dock {
             background: rgba(255, 255, 255, 0.25);
@@ -194,7 +234,7 @@
         }
         .bouncing { animation: appBounce 0.5s ease-in-out; }
 
-        /* macOS Window Container */
+        /* General App Windows */
         .container { 
             background: rgba(245, 245, 247, 0.9); 
             backdrop-filter: blur(25px);
@@ -204,34 +244,33 @@
             border-radius: 12px; 
             box-shadow: 0 20px 50px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.4); 
             box-sizing: border-box; 
-            overflow: hidden; 
             position: absolute;
             top: 50%;
             left: 50%;
+            height: 60vh; 
+            max-height: 450px; 
+            display: flex;
+            flex-direction: column;
         }
         
-        /* Blocked Section (Centered static) */
-        #blockedSection {
-            display: none;
-            transform: translate(-50%, -50%);
-            z-index: 100;
-        }
+        #blockedSection { display: none; transform: translate(-50%, -50%); z-index: 100; height: auto;}
 
-        /* Drive Window (Animated hidden/show) */
-        #driveSection {
+        /* App Window Animations */
+        .app-window {
             visibility: hidden;
             opacity: 0;
             transform: translate(-50%, -50%) scale(0.8);
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             z-index: 10;
         }
-        #driveSection.app-active {
+        .app-window.app-active {
             visibility: visible;
             opacity: 1;
             transform: translate(-50%, -50%) scale(1);
+            z-index: 15;
         }
 
-        /* macOS Title Bar */
+        /* Generic Titlebar (for Safari/Blocked) */
         .mac-titlebar {
             background: rgba(225, 225, 225, 0.8);
             border-bottom: 1px solid rgba(0, 0, 0, 0.1);
@@ -239,25 +278,13 @@
             display: flex;
             align-items: center;
             position: relative;
+            flex-shrink: 0;
         }
-        .mac-dots {
-            display: flex;
-            gap: 8px;
-        }
-        .dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            cursor: pointer;
-        }
+        .mac-dots { display: flex; gap: 8px; z-index: 10;}
+        .dot { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; }
         .dot.red { background-color: #ff5f56; border: 1px solid #e0443e; }
         .dot.yellow { background-color: #ffbd2e; border: 1px solid #dea123; }
         .dot.green { background-color: #27c93f; border: 1px solid #1aab29; }
-        
-        .dot.red:hover { background-color: #ff4b41; }
-        .dot.yellow:hover { background-color: #ffab0f; }
-        .dot.green:hover { background-color: #1dc435; }
-
         .mac-title {
             position: absolute;
             left: 50%;
@@ -267,57 +294,147 @@
             color: #4b5563;
         }
 
-        .drive-content { padding: 20px 30px 30px 30px; }
-        #blockedSection .drive-content { text-align: center; padding: 40px; }
-        #countdown { font-size: 24px; font-weight: bold; color: #ef4444; margin-top: 15px; }
+        /* =========================================
+           Finder Specific Layout (Light Theme, Split)
+           ========================================= */
+        #driveSection {
+            flex-direction: row; /* Split into sidebar and main */
+            padding: 0;
+            background: transparent;
+        }
+        
+        /* Finder Sidebar */
+        .finder-sidebar {
+            width: 130px;
+            background: rgba(245, 245, 247, 0.95);
+            border-right: 1px solid rgba(0,0,0,0.1);
+            border-top-left-radius: 12px;
+            border-bottom-left-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+        .sidebar-top {
+            padding: 15px 15px 10px 15px;
+            height: 15px;
+        }
+        .sidebar-content {
+            padding: 0 10px 15px 10px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+        .sidebar-section {
+            font-size: 11px;
+            font-weight: 600;
+            color: #888;
+            margin: 10px 10px 5px 10px;
+        }
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 5px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #333;
+            cursor: pointer;
+            margin-bottom: 2px;
+            transition: 0.1s;
+        }
+        .sidebar-item:hover { background: rgba(0,0,0,0.05); }
+        .sidebar-item.active { background: #dcdcdc; font-weight: 500;} 
+        .sidebar-item svg { width: 16px; height: 16px; fill: #007aff; flex-shrink: 0;}
 
-        /* macOS Drive Elements */
-        .search-container { position: relative; margin-bottom: 25px; width: 100%; }
-        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: #8e8e93; }
-        #searchInput { 
-            width: 100%; 
-            padding: 8px 15px 8px 35px; 
-            background: rgba(0, 0, 0, 0.05); 
-            border: 1px solid rgba(0, 0, 0, 0.05); 
+        /* Finder Main View */
+        .finder-main {
+            flex: 1;
+            background: #ffffff;
+            border-top-right-radius: 12px;
+            border-bottom-right-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .main-top {
+            padding: 10px 20px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            min-height: 25px;
+            background: rgba(255,255,255,0.9);
+        }
+        
+        /* Path Breadcrumb */
+        .folder-path {
+            font-size: 12px; 
+            color: #666; 
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 500;
+        }
+        .path-part { cursor: pointer; color: #007aff; }
+        .path-part:hover { text-decoration: underline; }
+        .path-separator { color: #ccc; }
+
+        /* Grid List Styles for Finder */
+        .file-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)); 
+            gap: 15px; 
+            padding: 20px;
+            overflow-y: auto;
+            align-content: start;
+            flex-grow: 1;
+        }
+        .file-grid .file-card { 
+            padding: 8px 5px; 
             border-radius: 8px; 
-            box-sizing: border-box; 
-            font-size: 14px; 
-            outline: none;
-            transition: 0.2s;
-        }
-        #searchInput:focus {
-            background: white;
-            border-color: #007aff;
-            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
-        }
-
-        .file-list { display: flex; flex-direction: column; gap: 4px; }
-        .file-card { 
-            padding: 10px 12px; 
-            border-radius: 6px; 
             display: flex; 
-            justify-content: space-between; 
+            flex-direction: column;
+            justify-content: flex-start; 
             align-items: center; 
             transition: background 0.1s; 
             border: none;
             background: transparent;
+            position: relative;
         }
-        .folder-card { cursor: pointer; }
-        .file-card:hover { background: rgba(0, 122, 255, 0.1); }
-        .file-card:active { background: rgba(0, 122, 255, 0.2); }
+        .file-grid .folder-card { cursor: pointer; }
+        .file-grid .file-card:hover { background: rgba(0, 122, 255, 0.1); }
         
-        .file-info { display: flex; align-items: center; gap: 12px; }
-        .folder-icon, .file-icon { width: 28px; height: 28px; flex-shrink: 0; }
-        .folder-icon { fill: #007aff !important; } 
-        .file-icon { color: #8e8e93; }
-        .file-info h3 { margin: 0; color: #1c1c1e; font-size: 14px; font-weight: 500; }
+        .file-grid .file-info { 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            gap: 8px; 
+            width: 100%;
+        }
+        .file-grid .folder-icon, .file-grid .file-icon { width: 50px; height: 50px; flex-shrink: 0; }
         
-        .download-icon-btn { 
+        .file-grid .file-info h3 { 
+            margin: 0; 
+            color: #1c1c1e; 
+            font-size: 12px; 
+            font-weight: 400; 
+            text-align: center;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            word-break: break-word;
+        }
+        
+        .file-grid .download-icon-btn { 
+            position: absolute;
+            top: 5px;
+            right: 5px;
             color: #007aff; 
-            background: none; 
+            background: rgba(255, 255, 255, 0.9); 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
             border: none; 
             cursor: pointer; 
-            padding: 6px; 
+            padding: 5px; 
             border-radius: 50%; 
             display: flex; 
             align-items: center; 
@@ -325,30 +442,52 @@
             transition: 0.2s; 
             opacity: 0; 
         }
-        .file-card:hover .download-icon-btn { opacity: 1; }
-        .download-icon-btn:hover { background: rgba(0, 122, 255, 0.1); }
-        .download-svg { width: 20px; height: 20px; }
+        .file-grid .file-card:hover .download-icon-btn { opacity: 1; }
+        .file-grid .download-icon-btn:hover { background: #f0f0f0; }
+        .file-grid .download-svg { width: 14px; height: 14px; }
+
+
+        /* Safari Specific Vertical List Styles */
+        .safari-content { padding: 20px; overflow-y: auto; flex-grow: 1; background: #fff;}
+        .safari-home { text-align: center; color: #888; margin-top: 50px; }
+        .safari-home img { width: 80px; margin-bottom: 20px; opacity: 0.5;}
         
-        .back-btn { 
-            display: flex; 
-            align-items: center; 
-            gap: 6px; 
-            cursor: pointer; 
-            color: #007aff; 
-            margin-bottom: 20px; 
-            font-weight: 500; 
-            width: fit-content; 
-            padding: 4px 8px; 
-            border-radius: 6px; 
-            transition: 0.2s; 
-            font-size: 14px;
-            margin-left: -8px; 
+        .safari-toolbar {
+            background: #f5f5f7;
+            padding: 8px 15px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: center;
         }
-        .back-btn:hover { background: rgba(0, 122, 255, 0.1); }
-        .back-icon { width: 16px; height: 16px; }
+        .safari-search-box {
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            width: 80%;
+            padding: 6px 15px 6px 30px;
+            font-size: 13px;
+            outline: none;
+            position: relative;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="%23888" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>');
+            background-repeat: no-repeat;
+            background-position: 8px center;
+            background-size: 14px;
+        }
+        .safari-search-box:focus { border-color: #007aff; box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2); }
+        
+        .file-list-vertical { display: flex; flex-direction: column; gap: 4px; padding-top: 10px;}
+        .file-list-vertical .file-card { padding: 10px 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; transition: background 0.1s; border: none; background: transparent; }
+        .file-list-vertical .file-card:hover { background: rgba(0, 122, 255, 0.1); }
+        .file-list-vertical .file-info { display: flex; align-items: center; gap: 12px; overflow: hidden;}
+        .file-list-vertical .file-icon { width: 32px; height: 32px; flex-shrink: 0; }
+        .file-list-vertical h3 { margin: 0; color: #1c1c1e; font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        .file-list-vertical .download-icon-btn { color: #007aff; background: none; border: none; cursor: pointer; padding: 6px; border-radius: 50%; display: flex; align-items: center; justify-content: center; opacity: 0; transition: 0.2s; }
+        .file-list-vertical .file-card:hover .download-icon-btn { opacity: 1; }
+        .file-list-vertical .download-svg { width: 20px; height: 20px; }
+
     </style>
 </head>
-<body oncontextmenu="return false">
+<body oncontextmenu="return false" onclick="closeMenus(event)">
 
     <div id="loginSection">
         <img src="https://i.ibb.co.com/355Qy8KY/cropped-circle-image.png" alt="User Profile" class="profile-pic">
@@ -369,9 +508,55 @@
         <div class="mac-topbar">
             <div class="topbar-left">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 384 512" fill="#000"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.3 48.6-.8 90.4-91.2 102.7-124.5-56-25-82.6-76.3-81.8-86.1zM242.2 87.2C259.6 65.5 269 36.3 266 7.4c-25.2 2-55.5 17.6-73.4 39.1-16.1 19.3-27.4 49-23.4 76.9 27.8 2.2 55.7-14.5 73-36.2z"/></svg>
-                <b>Finder</b>
-                <span>File</span>
-                <span>Edit</span>
+                <b onclick="openFinder(document.getElementById('finderIcon'))">Finder</b>
+                <div class="topbar-item">
+                    <span onclick="toggleMenu('fileMenu', event)">File</span>
+                    <div id="fileMenu" class="mac-dropdown">
+                        <div class="dropdown-item" onclick="openCategory('Desktop')">
+                            <svg viewBox="0 0 24 24"><path d="M20 3H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h6v2H8v2h8v-2h-2v-2h6c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM4 16V5h16v11H4z"/></svg> Desktop
+                        </div>
+                        <div class="dropdown-item" onclick="openCategory('Applications')">
+                            <svg viewBox="0 0 24 24"><path d="M12 3L4 21h3l1.8-4h6.4l1.8 4h3L12 3zm-2.1 12l2.1-4.7 2.1 4.7H9.9z"/></svg> Applications
+                        </div>
+                        <div class="dropdown-item" onclick="openCategory('Downloads')">
+                            <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg> Downloads
+                        </div>
+                        <div class="dropdown-item" onclick="openCategory('AirDrop')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> AirDrop
+                        </div>
+                        <div class="dropdown-item" onclick="openCategory('iCloud Drive')">
+                            <svg viewBox="0 0 24 24"><path d="M19.35 10.04A7.49 7.49 0 0012 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 000 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4s1.79-4 4-4h.71C7.37 7.69 9.48 6 12 6c3.04 0 5.5 2.46 5.5 5.5v.5H19c1.66 0 3 1.34 3 3s-1.34 3-3 3z"/></svg> iCloud Drive
+                        </div>
+                        <div class="dropdown-item" onclick="openCategory('Dropbox')">
+                            <svg viewBox="0 0 24 24"><path d="M12 2L4 7l4 3 4-3 4 3 4-3-8-5zm-8 7l-4 3 4 3 4-3-4-3zm16 0l-4 3 4 3 4-3-4-3zm-8 7l-4 3 4 3 4-3-4-3z"/></svg> Dropbox
+                        </div>
+                        <div class="dropdown-item" onclick="openCategory('Documents')">
+                            <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zM13 9V3.5L18.5 9H13z"/></svg> Documents
+                        </div>
+                        <div class="dropdown-item" onclick="openCategory('Recents')">
+                            <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg> Recents
+                        </div>
+                        <div class="dropdown-item" onclick="openCategory('Blog Stuff')">
+                            <svg viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg> Blog Stuff
+                        </div>
+                        <div class="dropdown-item" onclick="openCategory('Pictures')">
+                            <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg> Pictures
+                        </div>
+                        <div class="dropdown-item" onclick="openCategory('Design Assets')">
+                            <svg viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg> Design Assets
+                        </div>
+                        <div class="dropdown-item" onclick="openCategory('Blog Image Archive')">
+                            <svg viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg> Blog Image Archive
+                        </div>
+                        <div class="dropdown-item" onclick="openCategory('Google Drive')">
+                            <svg viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg> Google Drive
+                        </div>
+                        <div class="dropdown-item" onclick="openCategory('Movies')">
+                            <svg viewBox="0 0 24 24"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-2z"/></svg> Movies
+                        </div>
+                    </div>
+                </div>
+                <span class="topbar-item" onclick="window.location.href='https://my-drive-arm.netlify.app/admin.html'">Edit</span>
                 <span>View</span>
                 <span>Go</span>
                 <span>Window</span>
@@ -382,57 +567,114 @@
             </div>
         </div>
 
-        <div class="container" id="driveSection">
-            <div class="mac-titlebar">
-                <div class="mac-dots">
-                    <div class="dot red" onclick="closeFinder()"></div>
-                    <div class="dot yellow" onclick="closeFinder()"></div>
-                    <div class="dot green"></div>
-                </div>
-                <div class="mac-title">My Online Drive</div>
-            </div>
-
-            <div class="drive-content">
-                <div class="search-container">
-                    <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                    <input type="text" id="searchInput" placeholder="Search" onkeyup="searchFiles()">
-                </div>
-                
-                <div id="backButtonContainer" style="display: none;">
-                    <div class="back-btn" onclick="openFolder('root')">
-                        <svg class="back-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                        </svg>
-                        Back
+        <div class="container app-window" id="driveSection">
+            <div class="finder-sidebar">
+                <div class="sidebar-top">
+                    <div class="mac-dots">
+                        <div class="dot red" onclick="closeApp('driveSection', 'finderWrapper')"></div>
+                        <div class="dot yellow" onclick="closeApp('driveSection', 'finderWrapper')"></div>
+                        <div class="dot green"></div>
                     </div>
                 </div>
+                <div class="sidebar-content">
+                    <div class="sidebar-section">Favorites</div>
+                    
+                    <div class="sidebar-item" data-category="Desktop" onclick="openCategory('Desktop')">
+                        <svg viewBox="0 0 24 24"><path d="M20 3H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h6v2H8v2h8v-2h-2v-2h6c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM4 16V5h16v11H4z"/></svg> Desktop
+                    </div>
+                    <div class="sidebar-item" data-category="Applications" onclick="openCategory('Applications')">
+                        <svg viewBox="0 0 24 24"><path d="M12 3L4 21h3l1.8-4h6.4l1.8 4h3L12 3zm-2.1 12l2.1-4.7 2.1 4.7H9.9z"/></svg> Applications
+                    </div>
+                    <div class="sidebar-item" data-category="Downloads" onclick="openCategory('Downloads')">
+                        <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg> Downloads
+                    </div>
+                    <div class="sidebar-item" data-category="AirDrop" onclick="openCategory('AirDrop')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> AirDrop
+                    </div>
+                    <div class="sidebar-item" data-category="iCloud Drive" onclick="openCategory('iCloud Drive')">
+                        <svg viewBox="0 0 24 24"><path d="M19.35 10.04A7.49 7.49 0 0012 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 000 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4s1.79-4 4-4h.71C7.37 7.69 9.48 6 12 6c3.04 0 5.5 2.46 5.5 5.5v.5H19c1.66 0 3 1.34 3 3s-1.34 3-3 3z"/></svg> iCloud Drive
+                    </div>
+                    <div class="sidebar-item" data-category="Dropbox" onclick="openCategory('Dropbox')">
+                        <svg viewBox="0 0 24 24"><path d="M12 2L4 7l4 3 4-3 4 3 4-3-8-5zm-8 7l-4 3 4 3 4-3-4-3zm16 0l-4 3 4 3 4-3-4-3zm-8 7l-4 3 4 3 4-3-4-3z"/></svg> Dropbox
+                    </div>
+                    <div class="sidebar-item" data-category="Documents" onclick="openCategory('Documents')">
+                        <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zM13 9V3.5L18.5 9H13z"/></svg> Documents
+                    </div>
+                    <div class="sidebar-item" data-category="Recents" onclick="openCategory('Recents')">
+                        <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg> Recents
+                    </div>
+                    <div class="sidebar-item" data-category="Blog Stuff" onclick="openCategory('Blog Stuff')">
+                        <svg viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg> Blog Stuff
+                    </div>
+                    <div class="sidebar-item" data-category="Pictures" onclick="openCategory('Pictures')">
+                        <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg> Pictures
+                    </div>
+                    <div class="sidebar-item" data-category="Design Assets" onclick="openCategory('Design Assets')">
+                        <svg viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg> Design Assets
+                    </div>
+                    <div class="sidebar-item" data-category="Blog Image Archive" onclick="openCategory('Blog Image Archive')">
+                        <svg viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg> Blog Image Archive
+                    </div>
+                    <div class="sidebar-item" data-category="Google Drive" onclick="openCategory('Google Drive')">
+                        <svg viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg> Google Drive
+                    </div>
+                    <div class="sidebar-item" data-category="Movies" onclick="openCategory('Movies')">
+                        <svg viewBox="0 0 24 24"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-2z"/></svg> Movies
+                    </div>
 
-                <div class="file-list" id="fileList">
-                    <p style="text-align:center; color:#8e8e93; font-size: 14px;">Loading...</p>
                 </div>
+            </div>
+
+            <div class="finder-main">
+                <div class="main-top">
+                    <div class="folder-path" id="folderPathDisplay"></div>
+                </div>
+                <div class="file-grid" id="fileList">
+                    <p style="text-align:center; color:#8e8e93; font-size: 14px; width:100%;">Loading...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="container app-window" id="safariSection">
+            <div class="mac-titlebar">
+                <div class="mac-dots">
+                    <div class="dot red" onclick="closeApp('safariSection', 'safariWrapper')"></div>
+                    <div class="dot yellow" onclick="closeApp('safariSection', 'safariWrapper')"></div>
+                    <div class="dot green"></div>
+                </div>
+                <div class="mac-title">Safari</div>
+            </div>
+            <div class="safari-toolbar">
+                <input type="text" id="safariSearch" class="safari-search-box" placeholder="Search Drive Files..." onkeyup="safariSearchFiles()">
+            </div>
+            <div class="safari-content">
+                <div id="safariHome" class="safari-home">
+                    <img src="https://i.ibb.co.com/jk3WbBby/safari-macos-bigsur-icon-189770.png" alt="Safari">
+                    <h2>Favorites</h2>
+                    <p>Use the search bar above to search your entire drive.</p>
+                </div>
+                <div class="file-list-vertical" id="safariFileList" style="display: none;"></div>
             </div>
         </div>
 
         <div class="mac-dock-container">
             <div class="mac-dock">
                 <div class="dock-icon-wrapper" id="finderWrapper">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c9/Finder_Icon_macOS_Big_Sur.png" alt="Finder" class="dock-icon" onclick="openFinder(this)">
+                    <img src="https://i.ibb.co.com/YF02Rh93/finder-macos-bigsur-icon-190173.png" alt="Finder" class="dock-icon" id="finderIcon" onclick="openFinder(this)">
+                    <div class="dock-dot"></div>
+                </div>
+                <div class="dock-icon-wrapper" id="safariWrapper">
+                    <img src="https://i.ibb.co.com/jk3WbBby/safari-macos-bigsur-icon-189770.png" alt="Safari" class="dock-icon" onclick="openSafari(this)">
                     <div class="dock-dot"></div>
                 </div>
                 <div class="dock-icon-wrapper">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/52/Safari_browser_logo.svg" alt="Safari" class="dock-icon">
-                    <div class="dock-dot"></div>
+                    <img src="https://i.ibb.co.com/wh7c0QPB/mail-macos-bigsur-icon-190003.png" alt="Mail" class="dock-icon">
                 </div>
                 <div class="dock-icon-wrapper">
-                    <img src="https://i.ibb.co.com/8Q9vW3f/493152.webp" alt="Mail" class="dock-icon">
+                    <img src="https://i.ibb.co.com/M5f2fr0v/google-drive-macos-bigsur-icon-190126.png" alt="Google Drive" class="dock-icon">
                 </div>
                 <div class="dock-icon-wrapper">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/IMessage_logo.svg" alt="Messages" class="dock-icon">
-                </div>
-                <div class="dock-icon-wrapper">
-                    <img src="https://i.ibb.co.com/4Rt6bNPd/493162.webp" alt="Settings" class="dock-icon">
+                    <img src="https://i.ibb.co.com/rfG5kYtM/settings-macos-bigsur-icon-189754.png" alt="Settings" class="dock-icon">
                 </div>
             </div>
         </div>
@@ -448,7 +690,7 @@
             </div>
             <div class="mac-title">System Alert</div>
         </div>
-        <div class="drive-content">
+        <div class="drive-content" style="padding: 40px; text-align: center;">
             <h2 style="color: #ef4444; margin-top:0;">Access Blocked</h2>
             <div id="countdown"></div>
         </div>
@@ -472,62 +714,161 @@
         const db = getDatabase(app);
 
         let currentPath = "root";
+        let currentCategory = null;
         let driveFolders = [];
         let driveFiles = {};
 
-        // Security Constants (Obfuscated Token)
+        // Security Constants 
         const AUTH_TOKEN_KEY = '_mac_os_sec_uuid';
         const VALID_TOKEN = 'x9f2a_042567_auth';
+
+        // Update Dock Visibility Logic
+        window.updateDockVisibility = function() {
+            let activeApps = document.querySelectorAll('.app-window.app-active');
+            if(activeApps.length > 0) {
+                document.querySelector('.mac-dock-container').classList.add('hidden');
+            } else {
+                document.querySelector('.mac-dock-container').classList.remove('hidden');
+            }
+        };
+
+        // Keyboard open/close detection
+        let initialHeight = window.innerHeight;
+        window.addEventListener('resize', () => {
+            if (window.innerHeight < initialHeight - 100) {
+                document.querySelector('.mac-dock-container').classList.add('hidden');
+            } else {
+                updateDockVisibility();
+            }
+        });
 
         onValue(ref(db, 'driveData'), (snapshot) => {
             const data = snapshot.val();
             if(data) {
                 driveFolders = data.folders ? Object.values(data.folders) : [];
                 driveFiles = data.files || {};
-                if(sessionStorage.getItem(AUTH_TOKEN_KEY) === VALID_TOKEN) {
+                if(sessionStorage.getItem(AUTH_TOKEN_KEY) === VALID_TOKEN && document.getElementById('driveSection').classList.contains('app-active')) {
                     renderDrive();
                 }
             } else {
-                document.getElementById("fileList").innerHTML = "<p style='text-align:center; color:#8e8e93; font-size: 14px;'>No folders found. Add from Admin Panel.</p>";
+                document.getElementById("fileList").innerHTML = "<p style='text-align:center; color:#8e8e93; font-size: 14px; width:100%;'>No folders found. Add from Admin Panel.</p>";
             }
         });
 
+        // macOS Specific Light Blue Folder SVG generator
+        function getFolderSVG() {
+            return `<svg class="folder-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10,25 v60 a5,5 0 0,0 5,5 h70 a5,5 0 0,0 5,-5 v-50 a5,5 0 0,0 -5,-5 h-35 l-10,-10 h-25 a5,5 0 0,0 -5,5 z" fill="#81d4fa" />
+                        <path d="M10,35 v50 a5,5 0 0,0 5,5 h70 a5,5 0 0,0 5,-5 v-45 a5,5 0 0,0 -5,-5 h-75 z" fill="#29b6f6"/>
+                    </svg>`;
+        }
+
+        // macOS App/File Type Icon Generator
+        function getFileIconSVG(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            
+            const appExts = ['apk','xapk','apks','aab','ipa','exe','msi','dmg','pkg','appx','dll','sys','bat','sh'];
+            const imgExts = ['jpg','jpeg','png','gif','webp','bmp','tiff','svg','ico','heic','raw','psd','ai','eps'];
+            const docExts = ['pdf','doc','docx','txt','rtf','odt','xls','xlsx','ppt','pptx','csv','md','log'];
+            const audioExts = ['mp3','wav','aac','flac','ogg','m4a','wma','amr'];
+            const vidExts = ['mp4','mkv','avi','mov','wmv','flv','webm','3gp','mpeg','mpg'];
+            const zipExts = ['zip','rar','7z','tar','gz','bz2','xz','img','iso','bin','nrg','vhd','vmdk','apkx','obb','pak','dat'];
+            const codeExts = ['html','htm','css','js','json','xml','php','py','java','c','cpp','cs','rb','go','swift','kt','ts','dart','sql','db','sqlite','bak','tmp','config','ini','yaml','yml'];
+
+            let color = "#8e8e93"; // Default Gray
+            let text = ext.substring(0,3).toUpperCase();
+
+            if(appExts.includes(ext)) { color = "#ff3b30"; text = "APP"; } 
+            else if(imgExts.includes(ext)) { color = "#ff9500"; }
+            else if(docExts.includes(ext)) { color = "#007aff"; }
+            else if(audioExts.includes(ext)) { color = "#ff2d55"; }
+            else if(vidExts.includes(ext)) { color = "#5856d6"; }
+            else if(zipExts.includes(ext)) { color = "#8e8e93"; text = "ZIP"; }
+            else if(codeExts.includes(ext)) { color = "#34c759"; text = "</>"; }
+
+            return `<svg class="file-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 10 h40 l20 20 v60 a10 10 0 0 1 -10 10 h-50 a10 10 0 0 1 -10 -10 v-70 a10 10 0 0 1 10 -10 z" fill="white" stroke="${color}" stroke-width="4"/>
+                        <path d="M60 10 v20 h20" fill="none" stroke="${color}" stroke-width="4" stroke-linejoin="round"/>
+                        <rect x="30" y="45" width="40" height="25" rx="5" fill="${color}"/>
+                        <text x="50" y="62" fill="white" font-size="14" font-weight="bold" font-family="sans-serif" text-anchor="middle" alignment-baseline="middle">${text}</text>
+                    </svg>`;
+        }
+
+        function getFolderName(id) {
+            const folder = driveFolders.find(f => f.id === id);
+            return folder ? folder.name : "Folder";
+        }
+
         window.renderDrive = function() {
             const listContainer = document.getElementById("fileList");
-            const backBtn = document.getElementById("backButtonContainer");
-            const searchInput = document.getElementById("searchInput");
+            const pathDisplay = document.getElementById("folderPathDisplay");
             
             listContainer.innerHTML = "";
-            searchInput.value = ""; 
+            
+            if(currentCategory) {
+                pathDisplay.innerHTML = `<span class="path-part" onclick="openFolder('root')">Home</span> <span class="path-separator">></span> <span>${currentCategory}</span>`;
+                
+                let allFiles = [];
+                Object.values(driveFiles).forEach(folderFiles => {
+                    allFiles = allFiles.concat(Object.values(folderFiles));
+                });
 
-            if (currentPath === "root") {
-                backBtn.style.display = "none";
+                let filteredFiles = allFiles;
+                
+                if(currentCategory === 'Applications') {
+                    const appExts = ['apk','xapk','apks','aab','ipa','exe','msi','dmg','pkg','appx'];
+                    filteredFiles = allFiles.filter(f => appExts.some(ext => f.name.toLowerCase().endsWith('.'+ext)));
+                } else if(currentCategory === 'Pictures' || currentCategory === 'Blog Image Archive') {
+                    const imgExts = ['jpg','jpeg','png','gif','webp','svg'];
+                    filteredFiles = allFiles.filter(f => imgExts.some(ext => f.name.toLowerCase().endsWith('.'+ext)));
+                } else if(currentCategory === 'Movies') {
+                    const vidExts = ['mp4','mkv','avi','mov'];
+                    filteredFiles = allFiles.filter(f => vidExts.some(ext => f.name.toLowerCase().endsWith('.'+ext)));
+                }
+
+                if(filteredFiles.length === 0) {
+                    listContainer.innerHTML = "<p style='text-align:center; color:#8e8e93; font-size: 14px; width:100%; margin-top:20px;'>No files found in this category.</p>";
+                }
+
+                filteredFiles.forEach(file => {
+                    listContainer.innerHTML += `
+                        <div class="file-card">
+                            <div class="file-info">
+                                ${getFileIconSVG(file.name)}
+                                <h3>${file.name}</h3>
+                            </div>
+                            <button class="download-icon-btn" onclick="openSecureLink('${file.link}')" title="Download">
+                                <svg class="download-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                            </button>
+                        </div>`;
+                });
+
+            } else if (currentPath === "root") {
+                pathDisplay.innerHTML = `<span>Home</span>`;
                 driveFolders.forEach(folder => {
                     listContainer.innerHTML += `
                         <div class="file-card folder-card" onclick="openFolder('${folder.id}')">
                             <div class="file-info">
-                                <svg class="folder-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                    <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
-                                </svg>
+                                ${getFolderSVG()}
                                 <h3>${folder.name}</h3>
                             </div>
                         </div>`;
                 });
             } else {
-                backBtn.style.display = "block";
+                pathDisplay.innerHTML = `<span class="path-part" onclick="openFolder('root')">Home</span> <span class="path-separator">></span> <span>${getFolderName(currentPath)}</span>`;
                 const filesInFolder = driveFiles[currentPath] ? Object.values(driveFiles[currentPath]) : [];
                 
                 if(filesInFolder.length === 0) {
-                    listContainer.innerHTML = "<p style='text-align:center; color:#8e8e93; font-size: 14px;'>Folder is empty.</p>";
+                    listContainer.innerHTML = "<p style='text-align:center; color:#8e8e93; font-size: 14px; width:100%; margin-top:20px;'>Folder is empty.</p>";
                 }
 
                 filesInFolder.forEach(file => {
                     listContainer.innerHTML += `
                         <div class="file-card">
                             <div class="file-info">
-                                <svg class="file-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                                </svg>
+                                ${getFileIconSVG(file.name)}
                                 <h3>${file.name}</h3>
                             </div>
                             <button class="download-icon-btn" onclick="openSecureLink('${file.link}')" title="Download">
@@ -542,15 +883,70 @@
 
         window.openFolder = function(folderId) {
             currentPath = folderId;
+            currentCategory = null;
+            
+            // Remove active highlight from sidebar items
+            document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+            
             renderDrive();
         };
 
-        window.searchFiles = function() {
-            let input = document.getElementById('searchInput').value.toLowerCase();
-            let cards = document.getElementsByClassName('file-card');
-            for (let i = 0; i < cards.length; i++) {
-                let title = cards[i].getElementsByTagName('h3')[0].innerText.toLowerCase();
-                cards[i].style.display = title.includes(input) ? "flex" : "none";
+        window.openCategory = function(categoryName) {
+            currentCategory = categoryName;
+            document.getElementById('fileMenu').classList.remove('show');
+            
+            // Highlight selected item in sidebar
+            document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+            let activeItem = document.querySelector(`.sidebar-item[data-category="${categoryName}"]`);
+            if(activeItem) activeItem.classList.add('active');
+            
+            // Bring Finder to front
+            document.querySelectorAll('.app-window').forEach(w => w.style.zIndex = '10');
+            document.getElementById('driveSection').style.zIndex = '15';
+            
+            openFinder(document.getElementById('finderIcon'));
+        };
+
+        // Safari Search Function
+        window.safariSearchFiles = function() {
+            let input = document.getElementById('safariSearch').value.toLowerCase();
+            let homeScreen = document.getElementById('safariHome');
+            let resultList = document.getElementById('safariFileList');
+            
+            if(input.length === 0) {
+                homeScreen.style.display = 'block';
+                resultList.style.display = 'none';
+                return;
+            }
+
+            homeScreen.style.display = 'none';
+            resultList.style.display = 'flex';
+            resultList.innerHTML = '';
+
+            let allFiles = [];
+            Object.values(driveFiles).forEach(folderFiles => {
+                allFiles = allFiles.concat(Object.values(folderFiles));
+            });
+
+            let matchedFiles = allFiles.filter(f => f.name.toLowerCase().includes(input));
+
+            if(matchedFiles.length === 0) {
+                resultList.innerHTML = "<p style='text-align:center; color:#8e8e93; font-size: 14px; margin-top:20px; width:100%;'>No results found.</p>";
+            } else {
+                matchedFiles.forEach(file => {
+                    resultList.innerHTML += `
+                        <div class="file-card">
+                            <div class="file-info">
+                                ${getFileIconSVG(file.name)}
+                                <h3>${file.name}</h3>
+                            </div>
+                            <button class="download-icon-btn" onclick="openSecureLink('${file.link}')" title="Download">
+                                <svg class="download-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                            </button>
+                        </div>`;
+                });
             }
         };
 
@@ -565,15 +961,55 @@
                 element.classList.add('bouncing');
                 setTimeout(() => element.classList.remove('bouncing'), 500);
             }
+            document.querySelectorAll('.app-window').forEach(w => w.style.zIndex = '10');
+            let driveSec = document.getElementById('driveSection');
+            driveSec.style.zIndex = '15';
             setTimeout(() => {
-                document.getElementById('driveSection').classList.add('app-active');
+                driveSec.classList.add('app-active');
                 document.getElementById('finderWrapper').classList.add('active');
-            }, 200);
+                renderDrive();
+                updateDockVisibility();
+            }, 100);
         };
 
-        window.closeFinder = function() {
-            document.getElementById('driveSection').classList.remove('app-active');
-            document.getElementById('finderWrapper').classList.remove('active');
+        window.openSafari = function(element) {
+            if(element) {
+                element.classList.add('bouncing');
+                setTimeout(() => element.classList.remove('bouncing'), 500);
+            }
+            document.querySelectorAll('.app-window').forEach(w => w.style.zIndex = '10');
+            let safariSec = document.getElementById('safariSection');
+            safariSec.style.zIndex = '15';
+            setTimeout(() => {
+                safariSec.classList.add('app-active');
+                document.getElementById('safariWrapper').classList.add('active');
+                updateDockVisibility();
+            }, 100);
+        };
+
+        window.closeApp = function(appId, wrapperId) {
+            document.getElementById(appId).classList.remove('app-active');
+            document.getElementById(wrapperId).classList.remove('active');
+            if(appId === 'safariSection') {
+                document.getElementById('safariSearch').value = "";
+                safariSearchFiles();
+            }
+            setTimeout(updateDockVisibility, 300); // Check after animation closes
+        };
+
+        /* Dropdown Menus */
+        window.toggleMenu = function(menuId, event) {
+            event.stopPropagation();
+            let menu = document.getElementById(menuId);
+            let isShowing = menu.classList.contains('show');
+            document.querySelectorAll('.mac-dropdown').forEach(m => m.classList.remove('show'));
+            if (!isShowing) menu.classList.add('show');
+        };
+
+        window.closeMenus = function(event) {
+            if (!event.target.matches('.topbar-item span')) {
+                document.querySelectorAll('.mac-dropdown').forEach(m => m.classList.remove('show'));
+            }
         };
 
         /* Live Clock for Topbar */
@@ -591,7 +1027,6 @@
         // Advanced Client Security 
         const BLOCK_DURATION = 10 * 60 * 60 * 1000; 
         
-        // Anti-debugging
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.onkeydown = function(e) {
             if (e.keyCode == 123) return false; 
@@ -608,12 +1043,10 @@
                 if (sessionStorage.getItem(AUTH_TOKEN_KEY) === VALID_TOKEN) {
                     document.getElementById('loginSection').style.display = 'none';
                     document.getElementById('desktopSection').style.display = 'block';
-                    setTimeout(() => openFinder(document.querySelector('#finderWrapper .dock-icon')), 500);
                 }
             }
         }
 
-        // Obfuscated Password Generator Function
         const _getSecret = () => {
             const _p1 = ['0', '4', '2'];
             const _p2 = ['5', '6', '7'];
@@ -626,14 +1059,11 @@
             let errorMsg = document.getElementById('errorMsg');
             let attempts = parseInt(localStorage.getItem('driveAttempts') || '0');
 
-            // Compare with the securely reconstructed string
             if (input === _getSecret()) {
                 sessionStorage.setItem(AUTH_TOKEN_KEY, VALID_TOKEN);
                 localStorage.removeItem('driveAttempts');
                 document.getElementById('loginSection').style.display = 'none';
                 document.getElementById('desktopSection').style.display = 'block';
-                renderDrive();
-                setTimeout(() => openFinder(document.querySelector('#finderWrapper .dock-icon')), 500);
             } else {
                 attempts++;
                 if (attempts >= 3) {
