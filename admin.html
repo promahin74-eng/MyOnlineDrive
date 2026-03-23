@@ -19,11 +19,11 @@
 
         /* CSS Variables for Premium Dark/Light Mode */
         :root {
-            --bg-gradient: linear-gradient(135deg, #f6f8fd 0%, #f1f5f9 100%);
-            --bg-container: rgba(255, 255, 255, 0.95);
+            --bg-gradient: linear-gradient(135deg, #eef2ff 0%, #f0fdf4 50%, #f0f9ff 100%);
+            --bg-container: rgba(255, 255, 255, 0.97);
             --text-main: #475569;
             --text-heading: #0f172a;
-            --border-color: rgba(203, 213, 225, 0.6);
+            --border-color: rgba(203, 213, 225, 0.7);
             --item-bg: #ffffff;
             --item-hover: #f8fafc;
             --file-bg: #fffdf5;
@@ -34,29 +34,38 @@
             --trash-bg: #fef2f2;
             --trash-border: #fecaca;
             --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 10px 25px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
-            --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 10px 30px -5px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+            --shadow-hover: 0 22px 30px -8px rgba(0, 0, 0, 0.12), 0 10px 10px -5px rgba(0, 0, 0, 0.05);
+            --accent: #3b82f6;
+            --accent2: #6366f1;
+            --section-bg: rgba(248, 250, 252, 0.8);
+            --tab-active-bg: #3b82f6;
+            --input-bg: #f8fafc;
         }
 
         /* Dark Mode Variables */
         body.dark-mode {
-            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            --bg-container: rgba(30, 41, 59, 0.95);
-            --text-main: #cbd5e1;
-            --text-heading: #f8fafc;
-            --border-color: rgba(51, 65, 85, 0.8);
-            --item-bg: #0f172a;
+            --bg-gradient: linear-gradient(135deg, #060b18 0%, #0f172a 50%, #0d1f35 100%);
+            --bg-container: rgba(15, 23, 42, 0.97);
+            --text-main: #94a3b8;
+            --text-heading: #f1f5f9;
+            --border-color: rgba(51, 65, 85, 0.9);
+            --item-bg: #131e30;
             --item-hover: #1e293b;
-            --file-bg: #2a1604;
-            --file-hover: #422006;
-            --file-border: #b45309;
-            --stats-bg: linear-gradient(135deg, #0c4a6e 0%, #075985 100%);
-            --stats-border: #0369a1;
-            --trash-bg: #450a0a;
-            --trash-border: #7f1d1d;
-            --shadow-md: 0 10px 25px -3px rgba(0, 0, 0, 0.4);
-            --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            --file-bg: #1c1204;
+            --file-hover: #2a1a06;
+            --file-border: #92400e;
+            --stats-bg: linear-gradient(135deg, #0c1a2e 0%, #0c2a45 100%);
+            --stats-border: #1e4a6e;
+            --trash-bg: #200a0a;
+            --trash-border: #4a1010;
+            --shadow-md: 0 10px 30px -5px rgba(0, 0, 0, 0.6);
+            --shadow-hover: 0 22px 30px -8px rgba(0, 0, 0, 0.7);
+            --section-bg: rgba(15, 23, 42, 0.5);
+            --input-bg: #0f172a;
         }
+
+        * { box-sizing: border-box; }
 
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
@@ -65,20 +74,58 @@
             margin: 0; 
             min-height: 100vh;
             color: var(--text-main);
-            transition: all 0.4s ease;
+            transition: background 0.4s ease, color 0.4s ease;
         }
         
+        /* Subtle animated background blobs */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -20%;
+            left: -10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(59,130,246,0.07) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            animation: blobMove 12s ease-in-out infinite alternate;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -10%;
+            right: -5%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(99,102,241,0.07) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        @keyframes blobMove {
+            0% { transform: translate(0,0) scale(1); }
+            100% { transform: translate(50px, 40px) scale(1.1); }
+        }
+
         .container { 
             background: var(--bg-container); 
-            max-width: 780px; 
+            max-width: 820px; 
             margin: 0 auto; 
-            padding: 40px; 
-            border-radius: 24px; 
+            padding: 44px 48px; 
+            border-radius: 28px; 
             box-shadow: var(--shadow-md); 
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--border-color);
-            transition: all 0.4s ease;
+            transition: background 0.4s ease, box-shadow 0.4s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        @media (max-width: 600px) {
+            .container { padding: 28px 20px; }
+            body { padding: 20px 12px; }
         }
 
         /* === Login Page Animations === */
@@ -90,20 +137,20 @@
         }
 
         .logo-circle {
-            width: 90px;
-            height: 90px;
+            width: 96px;
+            height: 96px;
             background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.5);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.45);
             animation: floatLogo 3s ease-in-out infinite, pulseGlow 2s infinite alternate;
-            margin-bottom: 15px;
+            margin-bottom: 18px;
         }
 
         .logo-icon {
-            font-size: 2.5rem;
+            font-size: 2.6rem;
             color: white;
             animation: spinInner 10s linear infinite;
         }
@@ -111,7 +158,7 @@
         .brand-title {
             color: var(--text-heading);
             font-weight: 800;
-            font-size: 1.8rem;
+            font-size: 2rem;
             margin: 0;
             letter-spacing: -0.5px;
         }
@@ -119,9 +166,53 @@
         .brand-subtitle {
             color: var(--text-main);
             font-size: 0.95rem;
-            margin-top: 5px;
+            margin-top: 6px;
             font-weight: 500;
+            opacity: 0.8;
         }
+
+        /* Login card decoration */
+        .login-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, #dcfce7, #d1fae5);
+            color: #065f46;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 5px 14px;
+            border-radius: 100px;
+            margin-top: 10px;
+            letter-spacing: 0.5px;
+        }
+        body.dark-mode .login-badge {
+            background: linear-gradient(135deg, #052e16, #064e3b);
+            color: #6ee7b7;
+        }
+
+        /* Password input wrapper with show/hide */
+        .pass-wrapper {
+            position: relative;
+        }
+        .pass-wrapper input {
+            padding-right: 52px;
+        }
+        .pass-toggle {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            box-shadow: none;
+            padding: 4px;
+            color: var(--text-main);
+            font-size: 1rem;
+            cursor: pointer;
+            width: auto;
+            margin: 0;
+        }
+        .pass-toggle:hover { transform: translateY(-50%) scale(1.15); box-shadow: none; }
 
         /* Keyframes */
         @keyframes floatLogo {
@@ -130,8 +221,8 @@
             100% { transform: translateY(0px); }
         }
         @keyframes pulseGlow {
-            0% { box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); }
-            100% { box-shadow: 0 0 35px rgba(99, 102, 241, 0.7); }
+            0% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.4); }
+            100% { box-shadow: 0 0 40px rgba(99, 102, 241, 0.75); }
         }
         @keyframes spinInner {
             0% { transform: rotate(0deg); }
@@ -141,130 +232,335 @@
             from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
 
         .animate-slide-up {
             animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            opacity: 0; /* Starts hidden */
+            opacity: 0;
         }
         .delay-1 { animation-delay: 0.1s; }
         .delay-2 { animation-delay: 0.2s; }
         .delay-3 { animation-delay: 0.3s; }
 
-        /* === General UI Elements === */
+        /* === Header === */
         .header-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 1.5px solid var(--border-color);
         }
         
         h2 { color: var(--text-heading); margin: 0; font-weight: 800; }
+
+        .header-actions { display: flex; gap: 10px; align-items: center; }
+
+        /* === Tab Navigation === */
+        .tab-nav {
+            display: flex;
+            gap: 4px;
+            background: var(--section-bg);
+            padding: 5px;
+            border-radius: 14px;
+            margin-bottom: 28px;
+            border: 1px solid var(--border-color);
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 10px 8px;
+            background: transparent;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            transition: all 0.25s ease;
+            box-shadow: none;
+            margin: 0;
+        }
+        .tab-btn:hover { background: var(--item-hover); color: var(--text-heading); transform: none; box-shadow: none; }
+        .tab-btn.active {
+            background: var(--tab-active-bg);
+            color: white;
+            box-shadow: 0 4px 12px rgba(59,130,246,0.35);
+        }
+        .tab-btn.active:hover { transform: none; box-shadow: 0 4px 12px rgba(59,130,246,0.35); }
+        .tab-pane { display: none; animation: fadeIn 0.35s ease; }
+        .tab-pane.active { display: block; }
+
+        /* === Form Elements === */
+        .form-group { margin-bottom: 22px; }
         
-        .form-group { margin-bottom: 24px; }
-        label { display: flex; align-items: center; gap: 8px; font-weight: 700; margin-bottom: 10px; color: var(--text-heading); font-size: 15px; }
+        label { 
+            display: flex; align-items: center; gap: 8px; font-weight: 700; 
+            margin-bottom: 10px; color: var(--text-heading); font-size: 14.5px; 
+        }
+
+        .section-card {
+            background: var(--section-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .section-card-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
         
         input, select { 
-            width: 100%; padding: 14px 18px; 
+            width: 100%; padding: 13px 16px; 
             border: 1.5px solid var(--border-color); 
-            background: var(--item-bg);
-            color: var(--text-main);
-            border-radius: 12px; box-sizing: border-box; font-family: inherit; font-size: 15px;
+            background: var(--input-bg);
+            color: var(--text-heading);
+            border-radius: 12px; font-family: inherit; font-size: 14.5px;
             font-weight: 500;
-            transition: all 0.3s ease;
+            transition: all 0.25s ease;
         }
+        input::placeholder { color: var(--text-main); opacity: 0.6; }
         input:focus, select:focus {
             outline: none;
             border-color: #3b82f6;
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+            background: var(--item-bg);
         }
+
+        select option { background: var(--item-bg); color: var(--text-heading); }
         
         button { 
             background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 14px; 
             border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 15px; 
             display: flex; align-items: center; justify-content: center; gap: 8px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25);
         }
         button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4); }
         button:active { transform: translateY(0); }
         
         .btn-primary { 
             background: linear-gradient(135deg, #3b82f6 0%, #4f46e5 100%); 
-            width: 100%; margin-top: 15px;
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+            width: 100%; margin-top: 14px;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.25);
         }
         .btn-primary:hover { box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4); }
+
+        /* Icon button (dark mode toggle etc.) */
+        .btn-icon {
+            background: var(--item-bg);
+            color: var(--text-heading);
+            border: 1.5px solid var(--border-color);
+            width: 42px; height: 42px;
+            padding: 0;
+            border-radius: 11px;
+            box-shadow: var(--shadow-sm);
+            font-size: 1.1rem;
+        }
+        .btn-icon:hover { background: var(--item-hover); box-shadow: var(--shadow-sm); }
         
         /* Stats Box */
         .stats-box { 
-            display: flex; justify-content: space-between; background: var(--stats-bg); 
-            padding: 24px; border-radius: 16px; margin-bottom: 30px; 
-            border: 1px solid var(--stats-border); 
-            box-shadow: var(--shadow-sm);
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-bottom: 24px;
         }
-        .stats-box div { text-align: center; width: 32%; font-size: 14px; font-weight: 600; display: flex; flex-direction: column; gap: 8px; color: var(--text-heading);}
-        .stat-value { font-size: 28px; font-weight: 800; color: #3b82f6; text-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .stat-small { font-size: 14px; font-weight: 700; color: #f59e0b; }
+        .stat-card {
+            background: var(--item-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px 18px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.25s ease;
+        }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+        .stat-card-icon {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem;
+            margin-bottom: 4px;
+        }
+        .stat-card-icon.blue { background: rgba(14,165,233,0.12); color: #0ea5e9; }
+        .stat-card-icon.green { background: rgba(16,185,129,0.12); color: #10b981; }
+        .stat-card-icon.amber { background: rgba(245,158,11,0.12); color: #f59e0b; }
+        .stat-card-label { font-size: 12px; font-weight: 600; opacity: 0.65; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-value { font-size: 30px; font-weight: 800; color: #3b82f6; line-height: 1; }
+        .stat-small { font-size: 13px; font-weight: 700; color: #f59e0b; word-break: break-all; }
         
-        .section-divider { border: 0; height: 1.5px; background: var(--border-color); margin: 35px 0; }
+        .section-divider { border: 0; height: 1.5px; background: var(--border-color); margin: 28px 0; }
 
         /* Items (Folders & Files) */
         .item, .file-item { 
-            padding: 16px 20px; border: 1px solid var(--border-color); margin-bottom: 14px; 
+            padding: 14px 18px; border: 1px solid var(--border-color); margin-bottom: 10px; 
             border-radius: 14px; display: flex; justify-content: space-between; align-items: center; 
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             box-shadow: var(--shadow-sm);
         }
         .item { background: var(--item-bg); }
         .file-item { background: var(--file-bg); border: 1.5px dashed var(--file-border); }
         
         .item:hover, .file-item:hover {
-            transform: translateY(-4px) scale(1.01);
+            transform: translateX(4px);
             box-shadow: var(--shadow-hover);
             border-color: #3b82f6;
+            border-style: solid;
         }
 
-        .item-info { display: flex; align-items: center; gap: 15px; }
-        .item-icon { font-size: 1.8rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }
-        .item-details { display: flex; flex-direction: column; gap: 2px;}
-        .item-name { font-weight: 700; color: var(--text-heading); font-size: 16px; }
-        .item-date { font-size: 12px; font-weight: 500; opacity: 0.7; }
+        .item-info { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
+        .item-icon { font-size: 1.7rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); flex-shrink: 0; }
+        .item-details { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+        .item-name { font-weight: 700; color: var(--text-heading); font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
+        .item-date { font-size: 11.5px; font-weight: 500; opacity: 0.6; }
+        .item-size-badge {
+            font-size: 11px;
+            font-weight: 600;
+            background: rgba(59,130,246,0.1);
+            color: #3b82f6;
+            padding: 2px 8px;
+            border-radius: 6px;
+            margin-top: 2px;
+            display: inline-block;
+            width: fit-content;
+        }
         
-        .action-btns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end;}
+        .action-btns { display: flex; gap: 7px; flex-wrap: wrap; justify-content: flex-end; flex-shrink: 0; }
         .btn-small { 
-            width: auto; padding: 8px 12px; font-size: 13px; border-radius: 8px; 
-            box-shadow: none; font-weight: 600;
+            width: auto; padding: 7px 11px; font-size: 12.5px; border-radius: 8px; 
+            box-shadow: none; font-weight: 600; letter-spacing: 0.2px;
         }
         .btn-small:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
-        .btn-copy { background: #6366f1; }
-        .btn-preview { background: #0ea5e9; }
-        .btn-rename { background: #3b82f6; }
-        .btn-trash { background: #f59e0b; }
-        .btn-delete { background: #ef4444; }
+        .btn-copy { background: linear-gradient(135deg,#6366f1,#818cf8); }
+        .btn-preview { background: linear-gradient(135deg,#0ea5e9,#38bdf8); }
+        .btn-rename { background: linear-gradient(135deg,#3b82f6,#60a5fa); }
+        .btn-trash { background: linear-gradient(135deg,#f59e0b,#fbbf24); }
+        .btn-delete { background: linear-gradient(135deg,#ef4444,#f87171); }
         
-        .trash-section { background: var(--trash-bg); border: 1px solid var(--trash-border); padding: 25px; border-radius: 16px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);}
+        .trash-section { 
+            background: var(--trash-bg); 
+            border: 1px solid var(--trash-border); 
+            padding: 24px; 
+            border-radius: 18px; 
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            opacity: 0.55;
+        }
+        .empty-state i { font-size: 2.5rem; display: block; margin-bottom: 12px; }
+        .empty-state p { font-weight: 600; margin: 0; }
+
+        /* File count badge in folder select */
+        .folder-count-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .count-badge {
+            font-size: 12px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 100px;
+            background: rgba(59,130,246,0.1);
+            color: #3b82f6;
+        }
         
         /* Toast Notification */
-        #toast-container { position: fixed; bottom: 30px; right: 30px; z-index: 9999; display: flex; flex-direction: column; gap: 12px; }
+        #toast-container { position: fixed; bottom: 28px; right: 28px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
         .toast { 
-            background: var(--bg-container); border: 1px solid var(--border-color); color: var(--text-heading); 
-            padding: 16px 24px; border-radius: 12px; box-shadow: var(--shadow-hover); 
-            font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 12px;
+            background: var(--bg-container); 
+            border: 1px solid var(--border-color); 
+            color: var(--text-heading); 
+            padding: 14px 22px; 
+            border-radius: 14px; 
+            box-shadow: var(--shadow-hover); 
+            font-size: 14.5px; font-weight: 600; 
+            display: flex; align-items: center; gap: 12px;
             animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(16px);
+            max-width: 300px;
         }
-        .toast.success i { color: #10b981; font-size: 1.2rem; }
-        .toast.error i { color: #ef4444; font-size: 1.2rem; }
+        .toast.success { border-left: 4px solid #10b981; }
+        .toast.error { border-left: 4px solid #ef4444; }
+        .toast.success i { color: #10b981; font-size: 1.15rem; }
+        .toast.error i { color: #ef4444; font-size: 1.15rem; }
         @keyframes slideIn { from { transform: translateX(120%) scale(0.9); opacity: 0; } to { transform: translateX(0) scale(1); opacity: 1; } }
 
-        .toolbar { display: flex; gap: 15px; margin-bottom: 20px; }
+        .toolbar { display: flex; gap: 12px; margin-bottom: 16px; }
         #adminPanel { display: none; }
         
-        /* Custom Scrollbar for better look */
-        ::-webkit-scrollbar { width: 8px; }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        body.dark-mode ::-webkit-scrollbar-thumb { background: #334155; }
+
+        /* File type filter pills */
+        .filter-pills {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+        .pill {
+            padding: 5px 14px;
+            border-radius: 100px;
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1.5px solid var(--border-color);
+            background: var(--item-bg);
+            color: var(--text-main);
+            transition: all 0.2s ease;
+            box-shadow: none;
+            margin: 0;
+        }
+        .pill:hover { border-color: #3b82f6; color: #3b82f6; transform: none; box-shadow: none; }
+        .pill.active { background: #3b82f6; color: white; border-color: #3b82f6; }
+
+        /* Folder color dot in select */
+        .folder-dot {
+            display: inline-block;
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 540px) {
+            .stats-box { grid-template-columns: repeat(3,1fr); gap: 8px; }
+            .stat-card { padding: 14px 10px; }
+            .stat-value { font-size: 22px; }
+            .tab-btn span { display: none; }
+            .item-name { max-width: 120px; }
+            .action-btns { gap: 5px; }
+            .btn-small { padding: 6px 8px; font-size: 11.5px; }
+        }
     </style>
 </head>
 <body>
@@ -278,9 +574,13 @@
             </div>
             <h2 class="brand-title">Admin Console</h2>
             <div class="brand-subtitle">Secure Access Required</div>
+            <div class="login-badge"><i class="fas fa-shield-alt"></i> Protected Dashboard</div>
         </div>
         <div class="form-group" style="margin-top: 30px;">
-            <input type="password" id="adminPass" placeholder="Enter Admin Password" style="text-align: center; letter-spacing: 2px;">
+            <div class="pass-wrapper">
+                <input type="password" id="adminPass" placeholder="Enter Admin Password" style="text-align: center; letter-spacing: 2px;" onkeydown="if(event.key==='Enter') loginAdmin()">
+                <button class="pass-toggle" onclick="togglePassVisibility()" title="Show/Hide Password"><i class="fas fa-eye" id="passToggleIcon"></i></button>
+            </div>
         </div>
         <button class="btn-primary" onclick="loginAdmin()"><i class="fas fa-unlock"></i> Unlock Dashboard</button>
     </div>
@@ -288,63 +588,118 @@
     <div class="container" id="adminPanel">
         <div class="header-top animate-slide-up">
             <h2 style="display: flex; align-items: center; gap: 10px;">
-                <i class="fas fa-meteor" style="color:#3b82f6; font-size: 1.8rem; filter: drop-shadow(0 2px 5px rgba(59,130,246,0.3));"></i> 
+                <i class="fas fa-meteor" style="color:#3b82f6; font-size: 1.7rem; filter: drop-shadow(0 2px 5px rgba(59,130,246,0.3));"></i> 
                 Drive Pro
             </h2>
-            <button onclick="toggleDarkMode()" style="background: var(--item-bg); color: var(--text-heading); border: 1px solid var(--border-color); width: 45px; height: 45px; padding: 0; border-radius: 12px;"><i class="fas fa-moon" style="font-size: 1.2rem;"></i></button>
+            <div class="header-actions">
+                <button class="btn-icon" onclick="toggleDarkMode()" title="Toggle Dark Mode"><i class="fas fa-moon" id="darkModeIcon"></i></button>
+                <button class="btn-icon" onclick="logoutAdmin()" title="Logout" style="color:#ef4444;"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
         </div>
         
+        <!-- Stats Cards -->
         <div class="stats-box animate-slide-up delay-1">
-            <div><i class="fas fa-folder-open" style="font-size:24px; color:#0ea5e9;"></i> <span id="statTotalFolders" class="stat-value">0</span> Folders</div>
-            <div><i class="fas fa-file-alt" style="font-size:24px; color:#10b981;"></i> <span id="statTotalFiles" class="stat-value">0</span> Files</div>
-            <div><i class="fas fa-bolt" style="font-size:24px; color:#f59e0b;"></i> <span id="statLastAdded" class="stat-small">None</span> Last Add</div>
-        </div>
-
-        <div class="form-group animate-slide-up delay-2">
-            <label><i class="fas fa-folder-plus"></i> 1. Create New Folder</label>
-            <div style="display: flex; gap:12px;">
-                <input type="text" id="folderName" placeholder="Folder Name (e.g. Projects)">
-                <input type="color" id="folderColor" value="#3b82f6" style="width:55px; height:50px; padding:2px; border-radius: 12px; cursor: pointer;">
-                <button onclick="addFolder()" style="width: auto; margin:0; padding: 0 20px;"><i class="fas fa-plus"></i></button>
+            <div class="stat-card">
+                <div class="stat-card-icon blue"><i class="fas fa-folder-open"></i></div>
+                <span id="statTotalFolders" class="stat-value">0</span>
+                <span class="stat-card-label">Folders</span>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-icon green"><i class="fas fa-file-alt"></i></div>
+                <span id="statTotalFiles" class="stat-value">0</span>
+                <span class="stat-card-label">Files</span>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-icon amber"><i class="fas fa-bolt"></i></div>
+                <span id="statLastAdded" class="stat-small">None</span>
+                <span class="stat-card-label">Last Added</span>
             </div>
         </div>
 
-        <hr class="section-divider animate-slide-up delay-2">
-
-        <div class="form-group animate-slide-up delay-3">
-            <label><i class="fas fa-cloud-upload-alt"></i> 2. Upload File to Folder</label>
-            <select id="folderSelect"><option value="">Loading...</option></select>
-            <input type="text" id="fileName" placeholder="File Name (e.g. presentation.pdf)" style="margin-top:12px;">
-            <input type="text" id="fileLink" placeholder="Original Secure Link (https://...)" style="margin-top:12px;">
-            <button class="btn-primary" onclick="addFile()"><i class="fas fa-paper-plane"></i> Upload Now</button>
+        <!-- Tab Navigation -->
+        <div class="tab-nav animate-slide-up delay-2">
+            <button class="tab-btn active" onclick="switchTab('tab-add')" id="btn-tab-add">
+                <i class="fas fa-plus-circle"></i><span>Add Content</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('tab-manage')" id="btn-tab-manage">
+                <i class="fas fa-tasks"></i><span>Manage</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('tab-trash')" id="btn-tab-trash">
+                <i class="fas fa-trash-alt"></i><span>Trash</span>
+            </button>
         </div>
 
-        <hr class="section-divider animate-slide-up delay-3">
+        <!-- Tab: Add Content -->
+        <div class="tab-pane active" id="tab-add">
+            <!-- Create Folder -->
+            <div class="section-card animate-slide-up delay-2">
+                <div class="section-card-title"><i class="fas fa-folder-plus"></i> Create New Folder</div>
+                <div style="display: flex; gap:12px;">
+                    <input type="text" id="folderName" placeholder="Folder Name (e.g. Projects)">
+                    <input type="color" id="folderColor" value="#3b82f6" style="width:52px; height:46px; padding:3px; border-radius: 12px; cursor: pointer; flex-shrink:0;">
+                    <button onclick="addFolder()" style="width: auto; margin:0; padding: 0 20px; flex-shrink:0;"><i class="fas fa-plus"></i></button>
+                </div>
+            </div>
 
-        <div class="form-group animate-slide-up delay-3">
-            <label><i class="fas fa-tasks"></i> 3. Manage Your Drive</label>
-            <div class="toolbar">
-                <input type="text" id="searchBox" placeholder="Search files or folders..." onkeyup="searchItems()" style="flex: 2;">
-                <select id="sortBox" onchange="sortFiles()" style="flex: 1;">
-                    <option value="newest">Newest First</option>
-                    <option value="az">A to Z</option>
-                    <option value="za">Z to A</option>
+            <!-- Upload File -->
+            <div class="section-card animate-slide-up delay-3">
+                <div class="section-card-title"><i class="fas fa-cloud-upload-alt"></i> Upload File to Folder</div>
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <select id="folderSelect"><option value="">Loading folders...</option></select>
+                </div>
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <input type="text" id="fileName" placeholder="File Name (e.g. presentation.pdf)">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <input type="text" id="fileLink" placeholder="Secure Link (https://...)">
+                </div>
+                <button class="btn-primary" onclick="addFile()"><i class="fas fa-paper-plane"></i> Upload Now</button>
+            </div>
+        </div>
+
+        <!-- Tab: Manage -->
+        <div class="tab-pane" id="tab-manage">
+            <div class="section-card animate-slide-up">
+                <div class="toolbar">
+                    <input type="text" id="searchBox" placeholder="🔍  Search files or folders..." onkeyup="searchItems()" style="flex: 2;">
+                    <select id="sortBox" onchange="sortFiles()" style="flex: 1;">
+                        <option value="newest">Newest First</option>
+                        <option value="az">A → Z</option>
+                        <option value="za">Z → A</option>
+                    </select>
+                </div>
+                
+                <!-- File type filter pills -->
+                <div class="filter-pills" id="filterPills">
+                    <button class="pill active" onclick="filterByType('all', this)">All</button>
+                    <button class="pill" onclick="filterByType('video', this)"><i class="fas fa-film"></i> Video</button>
+                    <button class="pill" onclick="filterByType('image', this)"><i class="fas fa-image"></i> Image</button>
+                    <button class="pill" onclick="filterByType('pdf', this)"><i class="fas fa-file-pdf"></i> PDF</button>
+                    <button class="pill" onclick="filterByType('audio', this)"><i class="fas fa-music"></i> Audio</button>
+                    <button class="pill" onclick="filterByType('other', this)"><i class="fas fa-file"></i> Other</button>
+                </div>
+
+                <div class="folder-count-row">
+                    <label style="margin-bottom: 0; font-size: 13px;"><i class="fas fa-folder" style="color:#0ea5e9;"></i> Select Folder</label>
+                    <span class="count-badge" id="folderFileCount">— files</span>
+                </div>
+                <select id="manageFolderSelect" onchange="loadFilesInFolder()" style="margin-bottom: 18px;">
+                    <option value="">-- Select Folder to View Files --</option>
                 </select>
+                <div id="folderListContainer"></div>
+                <div id="fileListContainer" style="margin-top: 12px;"></div>
             </div>
-            
-            <select id="manageFolderSelect" onchange="loadFilesInFolder()" style="margin-bottom: 20px;">
-                <option value="">-- Select Folder to View Files --</option>
-            </select>
-            <div id="folderListContainer"></div>
-            <div id="fileListContainer" style="margin-top: 15px;"></div>
         </div>
 
-        <div class="trash-section animate-slide-up delay-3" style="margin-top: 30px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <label style="color: #dc2626; margin:0; font-size: 16px;"><i class="fas fa-dumpster-fire"></i> Recycle Bin</label>
-                <button class="btn-small btn-delete" onclick="emptyTrash()"><i class="fas fa-fire"></i> Empty All</button>
+        <!-- Tab: Trash -->
+        <div class="tab-pane" id="tab-trash">
+            <div class="trash-section animate-slide-up">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <label style="color: #dc2626; margin:0; font-size: 15px; font-weight:700;"><i class="fas fa-dumpster-fire"></i> Recycle Bin</label>
+                    <button class="btn-small btn-delete" onclick="emptyTrash()"><i class="fas fa-fire"></i> Empty All</button>
+                </div>
+                <div id="trashContainer"></div>
             </div>
-            <div id="trashContainer"></div>
         </div>
     </div>
 
@@ -586,6 +941,85 @@
                 setTimeout(() => showToast("Trash Emptied Securely!"), 1000);
             }
         };
+
+        // ====== NEW UI FEATURES ======
+
+        // Tab switching
+        window.switchTab = function(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.getElementById('btn-' + tabId).classList.add('active');
+        };
+
+        // Logout
+        window.logoutAdmin = function() {
+            if(confirm("Logout from Admin Console?")) {
+                document.getElementById('adminPanel').style.display = 'none';
+                document.getElementById('loginPanel').style.display = 'block';
+                document.getElementById('adminPass').value = '';
+                showToast("Logged out successfully.");
+            }
+        };
+
+        // Password show/hide toggle
+        window.togglePassVisibility = function() {
+            let inp = document.getElementById('adminPass');
+            let icon = document.getElementById('passToggleIcon');
+            if(inp.type === 'password') { inp.type = 'text'; icon.className = 'fas fa-eye-slash'; }
+            else { inp.type = 'password'; icon.className = 'fas fa-eye'; }
+        };
+
+        // Dark mode icon update
+        let _origToggle = window.toggleDarkMode;
+        window.toggleDarkMode = function() {
+            _origToggle();
+            let isDark = document.body.classList.contains('dark-mode');
+            let icon = document.getElementById('darkModeIcon');
+            if(icon) icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+        };
+        // Set icon on load
+        if(localStorage.getItem('driveDarkMode') === 'true') {
+            let icon = document.getElementById('darkModeIcon');
+            if(icon) icon.className = 'fas fa-sun';
+        }
+
+        // File type filter
+        let activeFilter = 'all';
+        window.filterByType = function(type, btn) {
+            activeFilter = type;
+            document.querySelectorAll('.filter-pills .pill').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            applyFilter();
+        };
+
+        function applyFilter() {
+            document.querySelectorAll('#fileListContainer .file-item').forEach(item => {
+                if(activeFilter === 'all') { item.style.display = 'flex'; return; }
+                let name = item.getAttribute('data-name') || '';
+                let show = false;
+                if(activeFilter === 'video' && name.match(/\.(mp4|mkv|avi|mov)$/)) show = true;
+                else if(activeFilter === 'image' && name.match(/\.(jpg|jpeg|png|gif|webp)$/)) show = true;
+                else if(activeFilter === 'pdf' && name.match(/\.pdf$/)) show = true;
+                else if(activeFilter === 'audio' && name.match(/\.(mp3|wav)$/)) show = true;
+                else if(activeFilter === 'other' && !name.match(/\.(mp4|mkv|avi|mov|jpg|jpeg|png|gif|webp|pdf|mp3|wav)$/)) show = true;
+                item.style.display = show ? 'flex' : 'none';
+            });
+        }
+
+        // Update folder file count badge
+        let _origRenderFiles = window.renderFiles;
+        window.renderFiles = function() {
+            _origRenderFiles();
+            let count = document.querySelectorAll('#fileListContainer .file-item').length;
+            let badge = document.getElementById('folderFileCount');
+            if(badge) badge.textContent = count + (count === 1 ? ' file' : ' files');
+            setTimeout(applyFilter, 50);
+        };
+
+        // Auto-switch to Manage tab when folder is selected from Add tab
+        window._origLoadFilesInFolder = window.loadFilesInFolder;
+
     </script>
 <script>
   if ('serviceWorker' in navigator) {
